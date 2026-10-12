@@ -1,9 +1,62 @@
 {
+  "Header": {
+    "logo": "OBRIY",
+    "navLabel": "Main navigation",
+    "languageLabel": "Language",
+    "home": "Home",
+    "catalog": "Catalog",
+    "contacts": "Contacts",
+    "localeUk": "UA",
+    "localeEn": "EN"
+  },
+  "Footer": {
+    "phone": "+380 96 742 21 84",
+    "phoneTel": "+380967422184",
+    "schedule": "Consultation · Mon–Sat 10:00–19:00",
+    "copyright": "© OBRIY 2026 · All rights reserved",
+    "creditPrefix": "Website by — ",
+    "creditStudio": "Redient Web Studio",
+    "social": {
+      "facebook": "Facebook",
+      "telegram": "Telegram",
+      "viber": "Viber"
+    }
+  },
   "HomePage": {
-    "title": "OBRIY",
-    "description": "Project technical setup. English localization works.",
-    "currentLocale": "Current language: English",
-    "switchToEn": "English",
-    "switchToUk": "Українська"
+    "hero": {
+      "imageAlt": "Wooden dresser in a bright interior",
+      "eyebrow": "From selection to a finished solution",
+      "titleLine1": "We create space",
+      "titleLine2": "and comfort for you",
+      "bodyLine1": "A wide range of furniture — from ready-made solutions",
+      "bodyLine2": "to our own production.",
+      "cta": "Go to catalog"
+    },
+    "about": {
+      "heading": "Find furniture that suits you",
+      "bodyLine1": "Browse our catalog to explore the assortment and find what fits your needs.",
+      "bodyLine2": "If you need help choosing — contact us for a consultation."
+    },
+    "advantages": {
+      "heading": "Advantages",
+      "items": {
+        "01": {
+          "title": "Warranty up to 20 years",
+          "description": "Confidence in quality for years to come."
+        },
+        "02": {
+          "title": "Own production",
+          "description": "Furniture directly from the manufacturer."
+        },
+        "03": {
+          "title": "Assortment",
+          "description": "A wide choice of furniture for different spaces and needs."
+        },
+        "04": {
+          "title": "Installments",
+          "description": "Convenient payment in parts."
+        }
+      }
+    }
   }
 }

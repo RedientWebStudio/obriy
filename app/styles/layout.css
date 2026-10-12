@@ -1,9 +1,9 @@
 /*
   OBRIY layout primitives — container + grid/flex helpers
-  Breakpoints align to layout behavior in Figma frames:
-  - < 834px: mobile composition (1 col, pad 20)
-  - ≥ 834px: tablet composition (2 col, pad 32, burger)
-  - ≥ 1440px: desktop composition (4 col, pad 72, full nav)
+  Breakpoints:
+  - < 834px: mobile tokens (pad 20) — chrome later
+  - ≥ 834px: tablet tokens (pad 32) — chrome later
+  - ≥ 1024px: desktop composition (pad 72, full nav; Figma ref 1440)
 */
 
 .container {
@@ -25,7 +25,7 @@
   padding-inline: var(--page-inline);
 }
 
-@media (min-width: 1440px) {
+@media (min-width: 1024px) {
   .container-narrow {
     padding-inline: 0;
   }
@@ -74,7 +74,7 @@
   }
 }
 
-@media (min-width: 1440px) {
+@media (min-width: 1024px) {
   .grid-features {
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }
@@ -95,7 +95,7 @@
   }
 }
 
-@media (min-width: 1440px) {
+@media (min-width: 1024px) {
   .grid-12 {
     grid-template-columns: repeat(12, minmax(0, 1fr));
     gap: 1.5rem;
@@ -104,4 +104,546 @@
 
 .grid-span-full {
   grid-column: 1 / -1;
+}
+
+/*
+  Header — Desktop composition (Figma Homepage Desktop / Header 88).
+  Three-track grid: logo left, nav centered, locale right.
+*/
+.header-bar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  column-gap: clamp(1rem, 2vw, 2rem);
+  min-height: var(--header-height);
+  min-width: 0;
+}
+
+.header-logo {
+  justify-self: start;
+  min-width: 0;
+  font-family: var(--font-family-brand);
+  font-size: var(--text-logo);
+  font-weight: 400;
+  line-height: 1.2;
+  color: var(--brand);
+  text-decoration: none;
+  border-radius: 2px;
+}
+
+.header-nav {
+  justify-self: center;
+  min-width: 0;
+}
+
+.header-nav-list {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  /* Figma nav band ~285px with multi-space gaps ≈ 2rem–2.5rem */
+  gap: 2.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.header-nav-link {
+  position: relative;
+  display: inline-block;
+  font-family: var(--font-family-sans);
+  font-size: var(--text-nav);
+  font-weight: 500;
+  line-height: 1.25;
+  color: var(--ink);
+  text-decoration: none;
+  white-space: nowrap;
+  border: none;
+  border-radius: 2px;
+  box-shadow: none;
+  transition: color 0.3s ease;
+}
+
+/*
+  Underline via width (not scaleX) so thickness stays constant
+  for the whole L→R reveal — avoids subpixel thinning during transform.
+*/
+.header-nav-link::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: calc(100% + 4px);
+  width: 0;
+  height: 2px;
+  background-color: currentColor;
+  pointer-events: none;
+  transition: width 0.3s ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .header-nav-link:hover {
+    color: color-mix(in srgb, var(--ink) 82%, black);
+  }
+
+  .header-nav-link:hover::after {
+    width: 100%;
+  }
+}
+
+.header-locale {
+  justify-self: end;
+  min-width: 0;
+}
+
+.locale-switcher {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  font-family: var(--font-family-sans);
+  font-size: var(--text-button);
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.locale-sep {
+  padding-inline: 0.35em;
+  color: var(--ink-muted);
+  font-weight: 400;
+}
+
+.locale-active {
+  color: var(--ink);
+  font-weight: 500;
+  cursor: default;
+  user-select: none;
+}
+
+.locale-link {
+  color: var(--ink-muted);
+  font-weight: 400;
+  text-decoration: none;
+  border-radius: 2px;
+  cursor: pointer;
+}
+
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  width: 100%;
+  background: var(--canvas);
+  color: var(--ink);
+  border-bottom: 1px solid transparent;
+  transition: border-color 160ms ease;
+}
+
+.site-header.is-scrolled {
+  border-bottom-color: #e3e3e3;
+}
+
+.accent-bar {
+  width: var(--size-accent-width);
+  height: var(--size-accent-height);
+  background: var(--brand);
+  flex-shrink: 0;
+}
+
+.primary-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  box-sizing: border-box;
+  min-height: var(--control-height);
+  width: max-content;
+  min-width: 14.375rem; /* 230px — Figma Primary Button */
+  padding: 0 1.5625rem; /* 25px */
+  border-radius: var(--radius-control);
+  background: #171717;
+  color: var(--on-inverse);
+  font-family: var(--font-family-sans);
+  font-size: var(--text-button);
+  font-weight: 500;
+  line-height: 1.2;
+  text-decoration: none;
+  transform: scale(1);
+  transform-origin: center;
+  transition: transform 160ms ease;
+}
+
+.primary-button:hover {
+  transform: scale(1.02);
+}
+
+.primary-button-chevron {
+  width: 5px;
+  height: 10px;
+  flex-shrink: 0;
+}
+
+/*
+  Hero — Figma 1440 × 720 (node 4:6) as composition reference.
+  Height: up to 648px (≈90%), but never taller than remaining viewport
+  under the header so Header+Hero fit in one screen when possible.
+  Text tops are % of hero height (from 720 layout) so they scale with it.
+*/
+.hero {
+  position: relative;
+  isolation: isolate;
+  width: 100%;
+  height: clamp(
+    28rem,
+    calc(100svh - var(--header-height)),
+    var(--hero-height-max)
+  );
+  overflow: clip;
+  color: var(--on-inverse);
+}
+
+.hero-image {
+  object-fit: cover;
+  object-position: center;
+  z-index: 0;
+}
+
+.hero-tonal {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: linear-gradient(
+    90deg,
+    var(--hero-tonal-from) 0%,
+    var(--hero-tonal-via) 55%,
+    var(--hero-tonal-to) 100%
+  );
+}
+
+.hero-content {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  width: 100%;
+  max-width: var(--page-max);
+  margin-inline: auto;
+  pointer-events: none;
+}
+
+.hero-content > * {
+  pointer-events: auto;
+}
+
+.hero-eyebrow,
+.hero-title,
+.hero-body,
+.hero-cta {
+  position: absolute;
+  left: var(--page-inline);
+  margin: 0;
+}
+
+.hero-eyebrow {
+  top: 23.333%; /* 168 / 720 */
+  font-family: var(--font-family-sans);
+  font-size: var(--text-eyebrow);
+  font-weight: 500;
+  line-height: 1.25;
+  letter-spacing: var(--text-eyebrow-tracking);
+  color: var(--on-inverse);
+  white-space: nowrap;
+}
+
+.hero-title {
+  top: 29.444%; /* 212 / 720 */
+  font-family: var(--font-family-sans);
+  font-size: var(--text-hero);
+  font-weight: 500;
+  /* Figma wrapper leading-[0]; line boxes carry 1.1 */
+  line-height: 0;
+  color: var(--on-inverse);
+  white-space: nowrap;
+}
+
+/* Narrow desktop only: slightly smaller H1; above 1300 keep 58px token */
+@media (min-width: 1024px) and (max-width: 1300px) {
+  .hero-title {
+    font-size: 3.25rem; /* 52px */
+  }
+}
+
+.hero-title-line {
+  display: block;
+  line-height: var(--text-hero-leading);
+}
+
+.hero-body {
+  top: 51.25%; /* 369 / 720 */
+  font-family: var(--font-family-sans);
+  font-size: var(--text-body);
+  font-weight: 400;
+  line-height: 0;
+  color: var(--white);
+  white-space: nowrap;
+}
+
+.hero-body-line {
+  display: block;
+  line-height: var(--text-body-leading);
+}
+
+.hero-cta {
+  top: 69.722%; /* 502 / 720 */
+}
+
+/* About + Advantages — Figma section 880 */
+.about-advantages {
+  background: var(--canvas);
+  color: var(--ink);
+  padding-block: 5.75rem 16.25rem; /* 92 top accent → content; bottom to footer */
+}
+
+.about-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.about-heading {
+  margin: 2.375rem 0 0; /* 132 − 92 − 2 */
+  max-width: 47.5rem; /* 760px */
+  font-family: var(--font-family-sans);
+  font-size: var(--text-section);
+  font-weight: 500;
+  line-height: var(--text-section-leading);
+  color: var(--ink);
+}
+
+.about-text {
+  margin: 1.8125rem 0 0; /* 205 − 132 − 44 */
+  max-width: 57.5rem; /* 920px */
+  font-family: var(--font-family-sans);
+  font-size: var(--text-body);
+  font-weight: 400;
+  line-height: var(--text-body-leading);
+  color: var(--ink-muted);
+}
+
+.about-text-line {
+  display: block;
+}
+
+.advantages-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 5.3125rem; /* 318 − 205 − ~54 */
+}
+
+.advantages-heading {
+  margin: 2.25rem 0 0; /* 356 − 318 − 2 */
+  font-family: var(--font-family-sans);
+  font-size: var(--text-section);
+  font-weight: 500;
+  line-height: var(--text-section-leading);
+  color: var(--ink);
+  text-align: center;
+}
+
+.advantages-grid {
+  width: 100%;
+  margin-top: 4.25rem; /* numbers at 468 from heading 356 */
+}
+
+.advantage-card {
+  min-width: 0;
+}
+
+.advantage-number {
+  margin: 0;
+  font-family: var(--font-family-sans);
+  font-size: var(--text-number);
+  font-weight: 400;
+  line-height: 1.2;
+  color: var(--brand);
+}
+
+.advantage-title {
+  margin: 1.875rem 0 0; /* 518 − 468 − ~20 */
+  font-family: var(--font-family-sans);
+  font-size: var(--text-card-title);
+  font-weight: 500;
+  line-height: var(--text-card-title-leading);
+  color: var(--ink);
+}
+
+.advantage-text {
+  margin: 1rem 0 0; /* 565 − 518 − ~31 */
+  font-family: var(--font-family-sans);
+  font-size: var(--text-body);
+  font-weight: 400;
+  line-height: var(--text-body-leading);
+  color: var(--ink-muted);
+}
+
+/* Footer — Figma 240 structure; tighter vertical rhythm (~−10%) */
+.site-footer {
+  background: var(--surface-inverse);
+  color: var(--on-inverse);
+  padding-block: 2.5rem; /* 40px (was 44) */
+}
+
+.footer-top {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  column-gap: 1.5rem;
+  min-width: 0;
+}
+
+.footer-phone {
+  justify-self: start;
+  font-family: var(--font-family-sans);
+  font-size: var(--text-footer);
+  font-weight: 500;
+  line-height: 1.25;
+  color: var(--on-inverse);
+  text-decoration: none;
+  white-space: nowrap;
+  border-radius: 2px;
+  transition: opacity 160ms ease;
+}
+
+.footer-phone:hover {
+  opacity: 0.75;
+}
+
+.footer-schedule {
+  justify-self: center;
+  margin: 0;
+  font-family: var(--font-family-sans);
+  font-size: var(--text-footer);
+  font-weight: 400;
+  line-height: 1.25;
+  color: var(--on-inverse);
+  text-align: center;
+  white-space: nowrap;
+}
+
+.footer-socials {
+  justify-self: end;
+  display: flex;
+  align-items: center;
+  gap: 2.8125rem; /* 45px between icons */
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.footer-social {
+  display: grid;
+  place-items: center;
+  /* Fixed slot: hover scale does not shift neighbors */
+  width: 36px;
+  height: 36px;
+  overflow: visible;
+  border-radius: 2px;
+}
+
+/*
+  Hover on .footer-social (not only .footer-social-link): when social URLs
+  are unset, Footer renders <span class="footer-social"> — the link class
+  is absent, so a link-only hover rule never fires.
+  Base 36px ≈ +20% vs previous 30px; hover scales the img itself to 1.1.
+*/
+.footer-social img {
+  display: block;
+  width: 36px;
+  height: 36px;
+  max-width: none;
+  transform: scale(1);
+  transform-origin: center;
+  transition: transform 160ms ease;
+  pointer-events: none;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .footer-social:hover img {
+    transform: scale(1.1);
+  }
+}
+
+.footer-divider {
+  margin-top: 1.6875rem; /* 27px (was 30) */
+  height: 1px;
+  background: var(--divider-inverse);
+}
+
+.footer-bottom {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 2rem; /* 32px (was 36) */
+}
+
+.footer-meta {
+  margin: 0;
+  font-family: var(--font-family-sans);
+  font-size: var(--text-footer-meta);
+  font-weight: 400;
+  line-height: 1.2;
+  color: var(--on-inverse-muted);
+}
+
+.footer-credit-name {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-position: from-font;
+  text-decoration-skip-ink: none;
+  border-radius: 2px;
+  transition: opacity 160ms ease;
+}
+
+a.footer-credit-name:hover {
+  opacity: 0.75;
+}
+
+/* Shared focus-visible — subtle, not brand-red */
+.header-logo:focus-visible,
+.header-nav-link:focus-visible,
+.locale-link:focus-visible,
+.primary-button:focus-visible,
+.footer-phone:focus-visible,
+.footer-social-link:focus-visible,
+a.footer-credit-name:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--ink) 40%, transparent);
+  outline-offset: 3px;
+}
+
+.primary-button:focus-visible {
+  outline-color: color-mix(in srgb, var(--on-inverse) 55%, transparent);
+}
+
+.footer-phone:focus-visible,
+.footer-social-link:focus-visible,
+a.footer-credit-name:focus-visible {
+  outline-color: color-mix(in srgb, var(--on-inverse) 45%, transparent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .site-header,
+  .header-nav-link,
+  .header-nav-link::after,
+  .primary-button,
+  .footer-phone,
+  .footer-social img,
+  a.footer-credit-name {
+    transition: none;
+  }
+
+  .primary-button:hover,
+  .footer-social:hover img {
+    transform: none;
+  }
 }

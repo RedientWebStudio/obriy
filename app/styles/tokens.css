@@ -4,6 +4,9 @@
 */
 
 :root {
+  /* Hero height — Desktop polish; mobile/tablet keep simpler band */
+  --hero-height-max: 45rem; /* 720px fallback until desktop MQ */
+
   /* Color */
   --canvas: #f7f7f5;
   --ink: #171717;
@@ -71,12 +74,18 @@
   }
 }
 
-/* Desktop frame 1440 — pad 72; full type scale */
-@media (min-width: 1440px) {
+/*
+  Desktop composition (Figma frame 1440 as visual reference).
+  Metrics apply from 1024px so the Desktop stage stays true across
+  ~1024–1920; Tablet/Mobile adaptations come later.
+*/
+@media (min-width: 1024px) {
   :root {
     --page-inline: 72px;
-    --header-height: 88px;
-    --text-logo: 2.375rem; /* 38px */
+    /* Desktop chrome: 80 → 72 (~−10%), keep vertical centering */
+    --header-height: 72px;
+    --text-logo: 2.0625rem; /* 33px (was 35) */
+    --hero-height-max: 40.5rem; /* 648px ≈ 90% of Figma 720 */
     --text-nav: 1.1875rem; /* 19px */
     --text-eyebrow: 1.1875rem; /* 19px */
     --text-eyebrow-tracking: 0.08em; /* 1.52px @ 19px */

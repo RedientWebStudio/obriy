@@ -4,6 +4,7 @@ import "./globals.css";
 
 const onest = Onest({
   subsets: ["latin", "latin-ext", "cyrillic", "cyrillic-ext"],
+  weight: ["400", "500"],
   variable: "--font-onest",
   display: "swap",
 });
@@ -25,7 +26,9 @@ export default function RootLayout({ children }: Props) {
       lang="uk"
       className={`${onest.variable} ${libreBaskerville.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col font-sans">{children}</body>
+      <body className={`${onest.className} min-h-full flex flex-col`}>
+        {children}
+      </body>
     </html>
   );
 }

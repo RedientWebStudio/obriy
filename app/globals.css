@@ -13,16 +13,26 @@
   --color-on-inverse-muted: var(--on-inverse-muted);
   --color-divider-inverse: var(--divider-inverse);
 
-  /* Fonts */
+  /*
+    Fonts — reference next/font CSS variables directly.
+    Do not alias through --font-sans/--font-brand in custom CSS:
+    @theme inline + Tailwind defaults can leave those unresolved
+    and the browser falls back to system UI fonts.
+  */
   --font-sans: var(--font-onest), ui-sans-serif, system-ui, sans-serif;
   --font-brand: var(--font-libre-baskerville), ui-serif, Georgia, serif;
 
-  /* Breakpoints matching Figma layout stages */
+  /* Breakpoints: tablet frame 834; desktop composition from 1024 (ref 1440) */
   --breakpoint-tablet: 834px;
-  --breakpoint-desktop: 1440px;
+  --breakpoint-desktop: 1024px;
 
   /* Radius */
   --radius-control: 7px;
+}
+
+:root {
+  --font-family-sans: var(--font-onest), ui-sans-serif, system-ui, sans-serif;
+  --font-family-brand: var(--font-libre-baskerville), ui-serif, Georgia, serif;
 }
 
 @layer base {
@@ -41,7 +51,7 @@
     min-width: 0;
     background: var(--canvas);
     color: var(--ink);
-    font-family: var(--font-sans);
+    font-family: var(--font-family-sans);
     font-weight: 400;
     line-height: var(--text-body-leading);
     -webkit-font-smoothing: antialiased;
@@ -64,7 +74,7 @@ body:has([data-ui="NextStudioLayout"]) {
 
 /* Semantic type helpers (optional; components can also use tokens directly) */
 .text-logo {
-  font-family: var(--font-brand);
+  font-family: var(--font-family-brand);
   font-size: var(--text-logo);
   font-weight: 400;
   line-height: 1.2;
@@ -72,21 +82,21 @@ body:has([data-ui="NextStudioLayout"]) {
 }
 
 .text-hero {
-  font-family: var(--font-sans);
+  font-family: var(--font-family-sans);
   font-size: var(--text-hero);
   font-weight: 500;
   line-height: var(--text-hero-leading);
 }
 
 .text-section {
-  font-family: var(--font-sans);
+  font-family: var(--font-family-sans);
   font-size: var(--text-section);
   font-weight: 500;
   line-height: var(--text-section-leading);
 }
 
 .text-body {
-  font-family: var(--font-sans);
+  font-family: var(--font-family-sans);
   font-size: var(--text-body);
   font-weight: 400;
   line-height: var(--text-body-leading);
