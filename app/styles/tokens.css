@@ -1,0 +1,94 @@
+/*
+  OBRIY design tokens — values measured from Figma «P2 — OBRIY»
+  Frames: Homepage Desktop 1440 / Tablet 834 / Mobile 390
+*/
+
+:root {
+  /* Color */
+  --canvas: #f7f7f5;
+  --ink: #171717;
+  --ink-muted: #666666;
+  --brand: #b3262d;
+  --surface-inverse: #171717;
+  --on-inverse: #f7f7f5;
+  --on-inverse-muted: #bdbdbd;
+  --divider-inverse: #444444;
+  --white: #ffffff;
+
+  /* Hero tonal field (Homepage) */
+  --hero-tonal-from: rgb(20 20 20 / 0.72);
+  --hero-tonal-via: rgb(38 36 33 / 0.22);
+  --hero-tonal-to: rgb(217 209 196 / 0.05);
+
+  /* Radius — Primary Button */
+  --radius-control: 7px;
+
+  /* Accent bar — 60 × 2 */
+  --size-accent-width: 60px;
+  --size-accent-height: 2px;
+
+  /* Header heights */
+  --header-height: 72px;
+
+  /* Layout — mobile-first (Mobile frame) */
+  --page-inline: 20px;
+  --page-max: 1440px;
+  /* Desktop content band: 1440 − 72 × 2 */
+  --content-max: 1296px;
+
+  /* Type scale — Mobile (and Tablet where identical) */
+  --text-logo: 1.75rem; /* 28px */
+  --text-nav: 0.9375rem; /* 15px */
+  --text-eyebrow: 0.9375rem; /* 15px */
+  --text-eyebrow-tracking: 0.075em; /* 1.2px @ 15px */
+  --text-hero: 2.25rem; /* 36px */
+  --text-hero-leading: 1.1;
+  --text-body: 1rem; /* 16px */
+  --text-body-leading: 1.4;
+  --text-section: 1.875rem; /* 30px */
+  --text-section-leading: 1.15;
+  --text-card-title: 1.3125rem; /* 21px */
+  --text-card-title-leading: 1.18;
+  --text-button: 0.9375rem; /* 15px */
+  --text-footer: 1rem; /* 16px */
+  --text-footer-meta: 0.9375rem; /* 15px */
+  --text-number: 0.9375rem; /* 15px */
+
+  /* Control sizes — Mobile / Tablet button */
+  --control-height: 48px;
+
+  /* Grid gaps measured from advantage columns */
+  --grid-gap-advantages: 1.5rem;
+}
+
+/* Tablet frame 834 — pad 32; type mostly matches mobile; logo 38 */
+@media (min-width: 834px) {
+  :root {
+    --page-inline: 32px;
+    --header-height: 72px;
+    --text-logo: 2.375rem; /* 38px */
+    --grid-gap-advantages: 4.125rem; /* 66px: 450 − 64 − 320 */
+  }
+}
+
+/* Desktop frame 1440 — pad 72; full type scale */
+@media (min-width: 1440px) {
+  :root {
+    --page-inline: 72px;
+    --header-height: 88px;
+    --text-logo: 2.375rem; /* 38px */
+    --text-nav: 1.1875rem; /* 19px */
+    --text-eyebrow: 1.1875rem; /* 19px */
+    --text-eyebrow-tracking: 0.08em; /* 1.52px @ 19px */
+    --text-hero: 3.625rem; /* 58px */
+    --text-body: 1.1875rem; /* 19px */
+    --text-section: 2.375rem; /* 38px */
+    --text-card-title: 1.625rem; /* 26px */
+    --text-button: 1.0625rem; /* 17px */
+    --text-footer: 1.1875rem; /* 19px */
+    --text-footer-meta: 1.0625rem; /* 17px */
+    --text-number: 1.0625rem; /* 17px */
+    --control-height: 52px;
+    --grid-gap-advantages: 4.5rem; /* 72px between 270px columns */
+  }
+}

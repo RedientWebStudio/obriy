@@ -1,0 +1,107 @@
+/*
+  OBRIY layout primitives — container + grid/flex helpers
+  Breakpoints align to layout behavior in Figma frames:
+  - < 834px: mobile composition (1 col, pad 20)
+  - ≥ 834px: tablet composition (2 col, pad 32, burger)
+  - ≥ 1440px: desktop composition (4 col, pad 72, full nav)
+*/
+
+.container {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: var(--page-max);
+  margin-inline: auto;
+  padding-inline: var(--page-inline);
+}
+
+.container-narrow {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: var(--content-max);
+  margin-inline: auto;
+  /* Below desktop: same gutters as .container. At ≥1440, --content-max
+     already equals the 1296px band (1440 − 72 × 2), so side padding must
+     be 0 to avoid a double inset. */
+  padding-inline: var(--page-inline);
+}
+
+@media (min-width: 1440px) {
+  .container-narrow {
+    padding-inline: 0;
+  }
+}
+
+/* Full-bleed band that still respects page max width */
+.bleed {
+  width: 100%;
+  max-width: var(--page-max);
+  margin-inline: auto;
+}
+
+.stack {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.stack-row {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  min-width: 0;
+}
+
+.cluster {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem;
+  min-width: 0;
+}
+
+/* Advantage-style grids: 1 → 2 → 4 columns by layout stage */
+.grid-features {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--grid-gap-advantages);
+  min-width: 0;
+}
+
+@media (min-width: 834px) {
+  .grid-features {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1440px) {
+  .grid-features {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+/* Generic 12-column track for future sections */
+.grid-12 {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1rem;
+  min-width: 0;
+}
+
+@media (min-width: 834px) {
+  .grid-12 {
+    grid-template-columns: repeat(8, minmax(0, 1fr));
+    gap: 1.5rem;
+  }
+}
+
+@media (min-width: 1440px) {
+  .grid-12 {
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    gap: 1.5rem;
+  }
+}
+
+.grid-span-full {
+  grid-column: 1 / -1;
+}

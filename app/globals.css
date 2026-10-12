@@ -1,0 +1,94 @@
+@import "tailwindcss";
+@import "./styles/tokens.css";
+@import "./styles/layout.css";
+
+@theme inline {
+  /* Colors → Tailwind utilities (bg-canvas, text-brand, …) */
+  --color-canvas: var(--canvas);
+  --color-ink: var(--ink);
+  --color-ink-muted: var(--ink-muted);
+  --color-brand: var(--brand);
+  --color-surface-inverse: var(--surface-inverse);
+  --color-on-inverse: var(--on-inverse);
+  --color-on-inverse-muted: var(--on-inverse-muted);
+  --color-divider-inverse: var(--divider-inverse);
+
+  /* Fonts */
+  --font-sans: var(--font-onest), ui-sans-serif, system-ui, sans-serif;
+  --font-brand: var(--font-libre-baskerville), ui-serif, Georgia, serif;
+
+  /* Breakpoints matching Figma layout stages */
+  --breakpoint-tablet: 834px;
+  --breakpoint-desktop: 1440px;
+
+  /* Radius */
+  --radius-control: 7px;
+}
+
+@layer base {
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
+  html {
+    overflow-x: clip;
+  }
+
+  body {
+    margin: 0;
+    min-width: 0;
+    background: var(--canvas);
+    color: var(--ink);
+    font-family: var(--font-sans);
+    font-weight: 400;
+    line-height: var(--text-body-leading);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  img,
+  svg,
+  video {
+    display: block;
+    max-width: 100%;
+    height: auto;
+  }
+}
+
+/* Keep Studio on a light shell; site theme must not force a blank/black canvas */
+body:has([data-ui="NextStudioLayout"]) {
+  background: #fff;
+  color: #0d0d0d;
+}
+
+/* Semantic type helpers (optional; components can also use tokens directly) */
+.text-logo {
+  font-family: var(--font-brand);
+  font-size: var(--text-logo);
+  font-weight: 400;
+  line-height: 1.2;
+  color: var(--brand);
+}
+
+.text-hero {
+  font-family: var(--font-sans);
+  font-size: var(--text-hero);
+  font-weight: 500;
+  line-height: var(--text-hero-leading);
+}
+
+.text-section {
+  font-family: var(--font-sans);
+  font-size: var(--text-section);
+  font-weight: 500;
+  line-height: var(--text-section-leading);
+}
+
+.text-body {
+  font-family: var(--font-sans);
+  font-size: var(--text-body);
+  font-weight: 400;
+  line-height: var(--text-body-leading);
+  color: var(--ink-muted);
+}

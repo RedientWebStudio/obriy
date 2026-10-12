@@ -1,0 +1,9 @@
+{
+  "HomePage": {
+    "title": "OBRIY",
+    "description": "Project technical setup. English localization works.",
+    "currentLocale": "Current language: English",
+    "switchToEn": "English",
+    "switchToUk": "Українська"
+  }
+}

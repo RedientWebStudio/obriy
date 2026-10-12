@@ -1,0 +1,9 @@
+{
+  "HomePage": {
+    "title": "OBRIY",
+    "description": "Технічна підготовка проєкту. Локалізація українською працює.",
+    "currentLocale": "Поточна мова: українська",
+    "switchToEn": "English",
+    "switchToUk": "Українська"
+  }
+}
