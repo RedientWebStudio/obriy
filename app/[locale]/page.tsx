@@ -1,6 +1,7 @@
 import { setRequestLocale } from "next-intl/server";
 import { AboutAdvantages } from "@/components/home/AboutAdvantages";
 import { Hero } from "@/components/home/Hero";
+import { Footer } from "@/components/layout/Footer";
 
 export const instant = false;
 
@@ -13,9 +14,12 @@ export default async function HomePage({ params }: Props) {
   setRequestLocale(locale);
 
   return (
-    <main>
-      <Hero />
-      <AboutAdvantages />
-    </main>
+    <>
+      <main>
+        <Hero />
+        <AboutAdvantages />
+      </main>
+      <Footer />
+    </>
   );
 }

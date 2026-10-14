@@ -8,11 +8,12 @@
   --hero-height-max: 45rem; /* 720px fallback until desktop MQ */
 
   /* Color */
-  --canvas: #f7f7f5;
+  --canvas: #efefeb;
   --ink: #171717;
   --ink-muted: #666666;
   --brand: #b3262d;
   --surface-inverse: #171717;
+  /* Light text on inverse surfaces / hero — not the page canvas */
   --on-inverse: #f7f7f5;
   --on-inverse-muted: #bdbdbd;
   --divider-inverse: #444444;

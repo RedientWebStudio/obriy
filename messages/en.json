@@ -22,6 +22,60 @@
       "viber": "Viber"
     }
   },
+  "CatalogPage": {
+    "heading": "Catalog",
+    "lead": "Choose a furniture category",
+    "categories": {
+      "own-production": {
+        "name": "Own production",
+        "imageAlt": "Woodworking tools on a wooden workbench"
+      },
+      "beds": {
+        "name": "Beds",
+        "imageAlt": "Wooden bed in a bright bedroom"
+      },
+      "mattresses": {
+        "name": "Mattresses",
+        "imageAlt": "Mattress cross-section on a wooden base"
+      },
+      "sofas": {
+        "name": "Sofas",
+        "imageAlt": "Dark green sofa in a minimal interior"
+      },
+      "tables": {
+        "name": "Tables",
+        "imageAlt": "Oval dining table in a bright room"
+      },
+      "chairs": {
+        "name": "Chairs and armchairs",
+        "imageAlt": "Bar stool, office chair, and dining chair"
+      },
+      "dining-sets": {
+        "name": "Sets — tables and chairs",
+        "imageAlt": "Dining set with table and chairs"
+      },
+      "dressers": {
+        "name": "Dressers and cabinets",
+        "imageAlt": "Wooden dresser and bedside cabinet"
+      },
+      "wardrobes": {
+        "name": "Wardrobes",
+        "imageAlt": "Wooden wardrobe with sliding doors"
+      },
+      "hallways": {
+        "name": "Hallways",
+        "imageAlt": "Hallway furniture with mirror and coat rack"
+      },
+      "kitchens": {
+        "name": "Kitchens",
+        "imageAlt": "Modern kitchen with wood-finish cabinets"
+      },
+      "textiles": {
+        "name": "Textiles and accessories",
+        "imageAlt": "Decorative pillows on a sofa"
+      }
+    }
+  },
   "HomePage": {
     "hero": {
       "imageAlt": "Wooden dresser in a bright interior",

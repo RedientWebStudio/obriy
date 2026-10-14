@@ -8,51 +8,61 @@ const socials = [
   { key: "viber" as const, src: "/icons/viber.svg" },
 ];
 
-export async function Footer() {
+type Props = {
+  /** `full` — with contact/social row; `compact` — same footer without that row */
+  variant?: "full" | "compact";
+};
+
+export async function Footer({ variant = "full" }: Props) {
   const t = await getTranslations("Footer");
   const studioUrl = siteLinks.studio;
+  const isCompact = variant === "compact";
 
   return (
-    <footer className="site-footer">
+    <footer
+      className={isCompact ? "site-footer site-footer--compact" : "site-footer"}
+    >
       <Container>
-        <div className="footer-top">
-          <a href={`tel:${t("phoneTel")}`} className="footer-phone">
-            {t("phone")}
-          </a>
-          <p className="footer-schedule">{t("schedule")}</p>
-          <ul className="footer-socials">
-            {socials.map((item) => {
-              const href = siteLinks.social[item.key];
-              const label = t(`social.${item.key}`);
+        {!isCompact ? (
+          <div className="footer-top">
+            <a href={`tel:${t("phoneTel")}`} className="footer-phone">
+              {t("phone")}
+            </a>
+            <p className="footer-schedule">{t("schedule")}</p>
+            <ul className="footer-socials">
+              {socials.map((item) => {
+                const href = siteLinks.social[item.key];
+                const label = t(`social.${item.key}`);
 
-              return (
-                <li key={item.key}>
-                  {href ? (
-                    <a
-                      href={href}
-                      className="footer-social footer-social-link"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      aria-label={label}
-                    >
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={item.src} alt="" width={36} height={36} />
-                    </a>
-                  ) : (
-                    <span
-                      className="footer-social"
-                      role="img"
-                      aria-label={label}
-                    >
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={item.src} alt="" width={36} height={36} />
-                    </span>
-                  )}
-                </li>
-              );
-            })}
-          </ul>
-        </div>
+                return (
+                  <li key={item.key}>
+                    {href ? (
+                      <a
+                        href={href}
+                        className="footer-social footer-social-link"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label={label}
+                      >
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={item.src} alt="" width={36} height={36} />
+                      </a>
+                    ) : (
+                      <span
+                        className="footer-social"
+                        role="img"
+                        aria-label={label}
+                      >
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={item.src} alt="" width={36} height={36} />
+                      </span>
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        ) : null}
 
         <div className="footer-divider" aria-hidden="true" />
 

@@ -282,16 +282,17 @@
 
 /*
   Hero — Figma 1440 × 720 (node 4:6) as composition reference.
-  Height: up to 648px (≈90%), but never taller than remaining viewport
-  under the header so Header+Hero fit in one screen when possible.
-  Text tops are % of hero height (from 720 layout) so they scale with it.
+  Height: up to 648px (≈90% of 720); min fits the Figma text stack
+  (CTA bottom 554) so absolute tops never overflow the band.
+  Text tops use Figma px (not % of height): font sizes stay fixed, so
+  %-scaling was compressing eyebrow→title→body→CTA gaps.
 */
 .hero {
   position: relative;
   isolation: isolate;
   width: 100%;
   height: clamp(
-    28rem,
+    35.375rem, /* 566px — CTA bottom 554 + ~12px breathing */
     calc(100svh - var(--header-height)),
     var(--hero-height-max)
   );
@@ -342,7 +343,7 @@
 }
 
 .hero-eyebrow {
-  top: 23.333%; /* 168 / 720 */
+  top: 168px; /* Figma 4:8 */
   font-family: var(--font-family-sans);
   font-size: var(--text-eyebrow);
   font-weight: 500;
@@ -353,7 +354,7 @@
 }
 
 .hero-title {
-  top: 29.444%; /* 212 / 720 */
+  top: 212px; /* Figma 4:9 — gap after eyebrow box = 20px */
   font-family: var(--font-family-sans);
   font-size: var(--text-hero);
   font-weight: 500;
@@ -376,7 +377,7 @@
 }
 
 .hero-body {
-  top: 51.25%; /* 369 / 720 */
+  top: 369px; /* Figma 12:2 — gap after title box = 29px */
   font-family: var(--font-family-sans);
   font-size: var(--text-body);
   font-weight: 400;
@@ -391,7 +392,7 @@
 }
 
 .hero-cta {
-  top: 69.722%; /* 502 / 720 */
+  top: 502px; /* Figma 4:11 — gap after body box = 79px */
 }
 
 /* About + Advantages — Figma section 880 */
@@ -436,7 +437,8 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-top: 5.3125rem; /* 318 − 205 − ~54 */
+  /* Figma: About text bottom 259 → Advantages accent 318 → gap 59 */
+  margin-top: 3.6875rem; /* 59px */
 }
 
 .advantages-heading {
@@ -609,11 +611,120 @@ a.footer-credit-name:hover {
   opacity: 0.75;
 }
 
+/*
+  Footer — Compact: same chrome as full footer, without .footer-top.
+  Bottom band (divider → meta) keeps approved Homepage spacing
+  (divider→meta 32, padding-bottom 40). Top pad is tighter — no contact row.
+*/
+.site-footer--compact {
+  padding-top: 1.25rem; /* 20px above divider (full footer keeps 40) */
+}
+
+.site-footer--compact .footer-divider {
+  margin-top: 0;
+}
+
+/*
+  Catalog — Figma Catalog Desktop (102:2).
+  Intro + 3×4 category grid (400×280, col-gap 48, row-gap 40).
+*/
+.catalog-page {
+  background: var(--canvas);
+  color: var(--ink);
+  padding-bottom: 8.125rem; /* 130px grid → footer (1602 − 1472) */
+}
+
+.catalog-intro {
+  padding-top: 2.5rem; /* 40px: heading at 112 under header 72 */
+  padding-bottom: 2.3125rem; /* 37px → grid at 232 */
+}
+
+.catalog-heading {
+  margin: 0;
+  max-width: 31.25rem; /* 500px */
+  font-family: var(--font-family-sans);
+  font-size: var(--text-section); /* 38px desktop */
+  font-weight: 500;
+  line-height: var(--text-section-leading);
+  color: var(--ink);
+}
+
+.catalog-lead {
+  margin: 0.75rem 0 0; /* ~12px under heading box */
+  font-family: var(--font-family-sans);
+  font-size: var(--text-body);
+  font-weight: 400;
+  line-height: var(--text-body-leading);
+  color: var(--ink-muted);
+}
+
+.catalog-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  column-gap: 3rem; /* 48px */
+  row-gap: 2.5rem; /* 40px */
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.category-card {
+  position: relative;
+  display: block;
+  aspect-ratio: 400 / 280;
+  overflow: clip;
+  border: 1px solid rgb(23 23 23 / 0.55);
+  border-radius: 10px;
+  background: #e8e7e3;
+  text-decoration: none;
+  color: var(--ink);
+}
+
+.category-card-image {
+  object-fit: cover;
+  object-position: center;
+  transition: transform 220ms ease, opacity 220ms ease;
+}
+
+.category-card-caption {
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  min-height: 2.375rem; /* 38px single-line baseline */
+  height: auto;
+  padding: 0.4375rem 1.25rem; /* room for up to two 19px / 1.25 lines */
+  background: color-mix(in srgb, var(--canvas) 76%, transparent);
+}
+
+.category-card-name {
+  font-family: var(--font-family-sans);
+  font-size: var(--text-body); /* 19px desktop */
+  font-weight: 500;
+  line-height: 1.25;
+  text-align: center;
+  white-space: normal;
+  overflow-wrap: break-word;
+  text-wrap: balance;
+  max-width: 100%;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .category-card:hover .category-card-image {
+    transform: scale(1.03);
+  }
+}
+
 /* Shared focus-visible — subtle, not brand-red */
 .header-logo:focus-visible,
 .header-nav-link:focus-visible,
 .locale-link:focus-visible,
 .primary-button:focus-visible,
+.category-card:focus-visible,
 .footer-phone:focus-visible,
 .footer-social-link:focus-visible,
 a.footer-credit-name:focus-visible {
@@ -636,6 +747,7 @@ a.footer-credit-name:focus-visible {
   .header-nav-link,
   .header-nav-link::after,
   .primary-button,
+  .category-card-image,
   .footer-phone,
   .footer-social img,
   a.footer-credit-name {
@@ -643,6 +755,7 @@ a.footer-credit-name:focus-visible {
   }
 
   .primary-button:hover,
+  .category-card:hover .category-card-image,
   .footer-social:hover img {
     transform: none;
   }
