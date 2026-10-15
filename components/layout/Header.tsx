@@ -15,7 +15,7 @@ export async function Header() {
 
   return (
     <HeaderFrame>
-      <HeaderLogo label={t("logo")} />
+      <HeaderLogo label={t("logo")} scrollLabel={t("logoScrollTop")} />
 
       <NavLinks
         items={navItems}

@@ -1,5 +1,32 @@
 import { defineField, defineType } from "sanity";
 
+const PRODUCT_DESCRIPTION_MAX = 250;
+
+type ProductDescriptionValue = {
+  uk?: string;
+  en?: string;
+} | null;
+
+/** Character limit for product.description only — not shared localeText. */
+export function validateProductDescription(
+  value: ProductDescriptionValue | undefined,
+): true | string {
+  const uk = typeof value?.uk === "string" ? value.uk : "";
+  const en = typeof value?.en === "string" ? value.en : "";
+  const tooLong: string[] = [];
+
+  if (uk.length > PRODUCT_DESCRIPTION_MAX) {
+    tooLong.push(`Ukrainian is ${uk.length} characters`);
+  }
+  if (en.length > PRODUCT_DESCRIPTION_MAX) {
+    tooLong.push(`English is ${en.length} characters`);
+  }
+
+  if (tooLong.length === 0) return true;
+
+  return `Description must be ${PRODUCT_DESCRIPTION_MAX} characters or fewer, including spaces. ${tooLong.join(". ")}.`;
+}
+
 export const product = defineType({
   name: "product",
   title: "Product",
@@ -33,7 +60,17 @@ export const product = defineType({
       title: "Subcategory",
       type: "reference",
       to: [{ type: "subcategory" }],
-      description: "Optional grouping within a category (e.g. Soft beds).",
+      description:
+        "Regular subcategory placement. Leave empty when the product belongs only to Sale.",
+      hidden: ({ document }) => Boolean(document?.inSaleSection),
+    }),
+    defineField({
+      name: "inSaleSection",
+      title: "Place in Sale section",
+      type: "boolean",
+      initialValue: false,
+      description:
+        "Catalog placement in «Розпродаж». Not the same as having a discounted price. Sale products are not listed in regular subcategories.",
     }),
     defineField({
       name: "gallery",
@@ -52,13 +89,12 @@ export const product = defineType({
           ],
         },
       ],
-      validation: (rule) => rule.min(1),
     }),
     defineField({
       name: "description",
       title: "Description",
       type: "localeText",
-      validation: (rule) => rule.required(),
+      validation: (rule) => rule.custom(validateProductDescription),
     }),
     defineField({
       name: "variants",
@@ -74,27 +110,14 @@ export const product = defineType({
       of: [{ type: "productSpec" }],
     }),
     defineField({
-      name: "onSale",
-      title: "On sale",
-      type: "boolean",
-      initialValue: false,
-      description: "Global sale flag — not a subcategory.",
-    }),
-    defineField({
       name: "compareAtPrice",
-      title: "Compare-at price (UAH)",
+      title: "Legacy compare-at price (UAH)",
       type: "number",
-      description: "Original price shown when on sale.",
-      hidden: ({ document }) => !document?.onSale,
-      validation: (rule) =>
-        rule.custom((value, context) => {
-          const onSale = (context.document as { onSale?: boolean } | undefined)
-            ?.onSale;
-          if (onSale && (typeof value !== "number" || value < 0)) {
-            return "Compare-at price is required when product is on sale";
-          }
-          return true;
-        }),
+      description:
+        "Deprecated: prefer compare-at price on each variant. Kept for older documents.",
+      deprecated: {
+        reason: "Use variant.compareAtPrice instead",
+      },
     }),
     defineField({
       name: "order",
@@ -113,13 +136,13 @@ export const product = defineType({
     select: {
       title: "title.uk",
       media: "gallery.0",
-      onSale: "onSale",
+      inSaleSection: "inSaleSection",
       categoryTitle: "category.title.uk",
     },
-    prepare({ title, media, onSale, categoryTitle }) {
+    prepare({ title, media, inSaleSection, categoryTitle }) {
       return {
         title: title || "Product",
-        subtitle: [categoryTitle, onSale ? "Sale" : null]
+        subtitle: [categoryTitle, inSaleSection ? "Sale section" : null]
           .filter(Boolean)
           .join(" · "),
         media,

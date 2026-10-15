@@ -1,9 +1,8 @@
 import { getTranslations } from "next-intl/server";
 import { Container } from "@/components/layout/Container";
-import { siteLinks } from "@/lib/site-links";
+import { externalLinkProps, siteLinks } from "@/lib/site-links";
 
-const socials = [
-  { key: "facebook" as const, src: "/icons/facebook.svg" },
+const messengers = [
   { key: "telegram" as const, src: "/icons/telegram.svg" },
   { key: "viber" as const, src: "/icons/viber.svg" },
 ];
@@ -30,7 +29,7 @@ export async function Footer({ variant = "full" }: Props) {
             </a>
             <p className="footer-schedule">{t("schedule")}</p>
             <ul className="footer-socials">
-              {socials.map((item) => {
+              {messengers.map((item) => {
                 const href = siteLinks.social[item.key];
                 const label = t(`social.${item.key}`);
 
@@ -40,9 +39,8 @@ export async function Footer({ variant = "full" }: Props) {
                       <a
                         href={href}
                         className="footer-social footer-social-link"
-                        target="_blank"
-                        rel="noopener noreferrer"
                         aria-label={label}
+                        {...externalLinkProps(href)}
                       >
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img src={item.src} alt="" width={36} height={36} />

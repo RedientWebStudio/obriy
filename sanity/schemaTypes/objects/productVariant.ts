@@ -18,16 +18,33 @@ export const productVariant = defineType({
       type: "number",
       validation: (rule) => rule.required().min(0),
     }),
+    defineField({
+      name: "compareAtPrice",
+      title: "Compare-at price (UAH)",
+      type: "number",
+      description:
+        "Original price for this size when discounted. Optional — independent of Sale section placement.",
+      validation: (rule) => rule.min(0),
+    }),
   ],
   preview: {
     select: {
       size: "sizeLabel.uk",
       price: "price",
+      compareAtPrice: "compareAtPrice",
     },
-    prepare({ size, price }) {
+    prepare({ size, price, compareAtPrice }) {
+      const priceLabel =
+        typeof price === "number" ? `${price} ₴` : undefined;
+      const discount =
+        typeof compareAtPrice === "number" &&
+        typeof price === "number" &&
+        compareAtPrice > price
+          ? ` (was ${compareAtPrice} ₴)`
+          : "";
       return {
         title: size || "Variant",
-        subtitle: typeof price === "number" ? `${price} ₴` : undefined,
+        subtitle: priceLabel ? `${priceLabel}${discount}` : undefined,
       };
     },
   },

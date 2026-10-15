@@ -1,6 +1,6 @@
 /**
  * Catalog category cards — order matches Figma Catalog Desktop (102:11).
- * Routes extend existing `/catalog` as `/catalog/[slug]` (pages not built yet).
+ * Each slug routes to the universal `/catalog/[slug]` category page.
  */
 export const catalogCategories = [
   {

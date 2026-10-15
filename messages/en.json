@@ -1,6 +1,7 @@
 {
   "Header": {
     "logo": "OBRIY",
+    "logoScrollTop": "Back to top of this page",
     "navLabel": "Main navigation",
     "languageLabel": "Language",
     "home": "Home",
@@ -17,7 +18,6 @@
     "creditPrefix": "Website by — ",
     "creditStudio": "Redient Web Studio",
     "social": {
-      "facebook": "Facebook",
       "telegram": "Telegram",
       "viber": "Viber"
     }
@@ -74,6 +74,95 @@
         "name": "Textiles and accessories",
         "imageAlt": "Decorative pillows on a sofa"
       }
+    }
+  },
+  "ContactsPage": {
+    "heading": "Contacts",
+    "lead": "Get in touch with us or visit one of the OBRIY stores.",
+    "info": {
+      "phone": "Phone",
+      "email": "Email",
+      "schedule": "Consultation hours",
+      "social": "Messengers",
+      "emailValue": "yanagalas@gmail.com",
+      "scheduleValue": "Mon–Sat · 10:00–19:00"
+    },
+    "stores": {
+      "heading": "Our stores",
+      "route": "Get directions",
+      "mapLabel": "Interactive map · 2 stores"
+    },
+    "faq": {
+      "heading": "Frequently asked questions",
+      "lead": "Answers to common questions",
+      "items": {
+        "order": {
+          "question": "How do I place an order?",
+          "answer": "Orders are placed directly with a consultant. Simply contact us in any convenient way: by phone or through the messengers listed on the website. After you choose a product, the consultant agrees its specifications, terms, and fulfillment timeline with you."
+        },
+        "custom-size": {
+          "question": "Can I order furniture in custom sizes?",
+          "answer": "Yes, custom-sized furniture is available. The service is offered within Zakarpattia region and applies to selected furniture categories. If needed, a consultant can visit for measurements. To clarify details and whether custom manufacturing is possible, please contact our consultant."
+        },
+        "consultation": {
+          "question": "What information is needed for a consultation and quote?",
+          "answer": "For a consultation and preliminary cost estimate, please provide key details: furniture dimensions, preferred color, material, approximate budget, and delivery location. This helps us select the best option and give more accurate recommendations."
+        },
+        "lead-time": {
+          "question": "How long does order fulfillment take?",
+          "answer": "Fulfillment time depends on the furniture type, stock availability, product complexity, manufacturer, and logistics. In general, it can range from 1 day to 12 weeks. Wooden and upholstered furniture is usually made within 2–12 weeks. Exact timelines for a specific order can be confirmed with a consultant."
+        },
+        "prepayment": {
+          "question": "Is a prepayment required, and what is the amount?",
+          "answer": "Custom orders require a 30% prepayment of the product price. Accessories and small items do not require a prepayment, but delivery must be paid in advance. Detailed terms can be confirmed with a consultant."
+        },
+        "payment": {
+          "question": "What payment options are available?",
+          "answer": "Cash and cashless payment are available. The specific payment method is agreed individually when the order is placed."
+        },
+        "manufacturers": {
+          "question": "Which manufacturers do you work with?",
+          "answer": "We work with trusted furniture manufacturers, including Matrolux, Estella, Sokme, Gerbor, Arbor, Comfort Mebli, Mix Mebli, Данко, Moreli, Фортуна Захід, Лев, Mebel Star, and others."
+        },
+        "warranty": {
+          "question": "What is the warranty on fittings and furniture?",
+          "answer": "The warranty on furniture and fittings depends on the manufacturer and the specific product and ranges from 2 months to 15 years. The warranty period is defined by the manufacturer’s terms and is stated for each product separately. Warranty service details can be confirmed with a consultant."
+        }
+      }
+    }
+  },
+  "CategoryPage": {
+    "floatingCta": "Contact",
+    "nav": {
+      "aria": "Subcategories",
+      "open": "Open subcategory menu",
+      "close": "Close subcategory menu"
+    },
+    "labels": {
+      "size": "Size",
+      "price": "Price",
+      "specifications": "Specifications",
+      "photoPlaceholder": "Product photo",
+      "photoSingle": "1 photo",
+      "galleryPrev": "Previous photo",
+      "galleryNext": "Next photo",
+      "share": "Share",
+      "shareCopied": "Link copied",
+      "more": "More ↓",
+      "less": "Less ↑",
+      "fromPrefix": "from",
+      "lightboxClose": "Close gallery",
+      "lightboxLabel": "Open photo fullscreen"
+    },
+    "empty": {
+      "title": "This category assortment is being prepared",
+      "lead": "Products will appear here soon. Browse other catalog categories in the meantime.",
+      "cta": "Go to catalog →"
+    },
+    "unavailable": {
+      "title": "Own-production assortment is being confirmed",
+      "lead": "Subcategories and products will appear after the client provides the data. The catalog tile remains.",
+      "cta": "Back to catalog →"
     }
   },
   "HomePage": {
