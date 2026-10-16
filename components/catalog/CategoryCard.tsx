@@ -24,7 +24,7 @@ export function CategoryCard({
           alt={imageAlt}
           fill
           priority={priority}
-          sizes="(min-width: 1024px) 400px, 33vw"
+          sizes="(min-width: 1024px) 400px, (min-width: 768px) 377px, 100vw"
           className="category-card-image"
         />
         <span className="category-card-caption">

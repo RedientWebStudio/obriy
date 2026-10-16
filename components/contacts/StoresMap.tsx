@@ -19,6 +19,9 @@ export function StoresMap({ stores, locale, label }: Props) {
 
     let cancelled = false;
     let map: import("leaflet").Map | null = null;
+    let onTouchStart: ((event: TouchEvent) => void) | null = null;
+    let onTouchEnd: ((event: TouchEvent) => void) | null = null;
+    let mapContainer: HTMLElement | null = null;
 
     const init = async () => {
       try {
@@ -31,8 +34,15 @@ export function StoresMap({ stores, locale, label }: Props) {
           stores.map((store) => [store.coordinates.lat, store.coordinates.lng]),
         );
 
+        const coarsePointer = window.matchMedia("(pointer: coarse)").matches;
+
         map = L.map(containerRef.current, {
-          scrollWheelZoom: true,
+          // Wheel/trackpad scrolls the page; zoom via controls / pinch / dbl-click.
+          scrollWheelZoom: false,
+          // On touch, one-finger drag scrolls the page; two fingers pan the map.
+          dragging: !coarsePointer,
+          touchZoom: true,
+          doubleClickZoom: true,
           attributionControl: true,
         }).fitBounds(bounds.pad(0.35));
 
@@ -62,6 +72,31 @@ export function StoresMap({ stores, locale, label }: Props) {
               { className: "stores-map-popup" },
             );
         });
+
+        if (coarsePointer && map) {
+          mapContainer = map.getContainer();
+          onTouchStart = (event: TouchEvent) => {
+            if (!map) return;
+            if (event.touches.length >= 2) {
+              map.dragging.enable();
+            }
+          };
+          onTouchEnd = (event: TouchEvent) => {
+            if (!map) return;
+            if (event.touches.length < 2) {
+              map.dragging.disable();
+            }
+          };
+          mapContainer.addEventListener("touchstart", onTouchStart, {
+            passive: true,
+          });
+          mapContainer.addEventListener("touchend", onTouchEnd, {
+            passive: true,
+          });
+          mapContainer.addEventListener("touchcancel", onTouchEnd, {
+            passive: true,
+          });
+        }
       } catch {
         if (!cancelled) setFailed(true);
       }
@@ -71,6 +106,11 @@ export function StoresMap({ stores, locale, label }: Props) {
 
     return () => {
       cancelled = true;
+      if (mapContainer && onTouchStart && onTouchEnd) {
+        mapContainer.removeEventListener("touchstart", onTouchStart);
+        mapContainer.removeEventListener("touchend", onTouchEnd);
+        mapContainer.removeEventListener("touchcancel", onTouchEnd);
+      }
       if (map) {
         map.remove();
         map = null;

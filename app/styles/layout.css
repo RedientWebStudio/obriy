@@ -1,8 +1,8 @@
 /*
   OBRIY layout primitives — container + grid/flex helpers
   Breakpoints:
-  - < 834px: mobile tokens (pad 20) — chrome later
-  - ≥ 834px: tablet tokens (pad 32) — chrome later
+  - < 768px: mobile tokens (pad 20)
+  - ≥ 768px: tablet tokens (pad 32; burger chrome + catalog 2-col; Figma ref 834)
   - ≥ 1024px: desktop composition (pad 72, full nav; Figma ref 1440)
 */
 
@@ -25,8 +25,26 @@
   padding-inline: var(--page-inline);
 }
 
-@media (min-width: 1024px) {
+/*
+  Tablet shell (≥768): cap content to Figma 834.
+  Desktop (≥1024) restores page/content max — cascade override, no
+  max-width:1023 ceiling (avoids a one-pixel “third” composition).
+  Hero image stays full-bleed; .hero-content max is set with .hero-content.
+*/
+@media (min-width: 768px) {
+  .container,
   .container-narrow {
+    max-width: var(--layout-max-tablet);
+  }
+}
+
+@media (min-width: 1024px) {
+  .container {
+    max-width: var(--page-max);
+  }
+
+  .container-narrow {
+    max-width: var(--content-max);
     padding-inline: 0;
   }
 }
@@ -68,7 +86,7 @@
   min-width: 0;
 }
 
-@media (min-width: 834px) {
+@media (min-width: 768px) {
   .grid-features {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -88,7 +106,7 @@
   min-width: 0;
 }
 
-@media (min-width: 834px) {
+@media (min-width: 768px) {
   .grid-12 {
     grid-template-columns: repeat(8, minmax(0, 1fr));
     gap: 1.5rem;
@@ -107,12 +125,13 @@
 }
 
 /*
-  Header — Desktop composition (Figma Homepage Desktop / Header 88).
-  Three-track grid: logo left, nav centered, locale right.
+  Header — mobile/tablet: logo left, locale + burger right
+  (Figma Homepage Tablet 278:3 / Burger Menu 368:2).
+  Desktop ≥1024: three-track grid, logo | nav | locale (Header 88).
 */
 .header-bar {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
   column-gap: clamp(1rem, 2vw, 2rem);
   min-height: var(--header-height);
@@ -137,8 +156,9 @@
   cursor: pointer;
 }
 
+/* Desktop inline nav — hidden below composition breakpoint */
 .header-nav {
-  justify-self: center;
+  display: none;
   min-width: 0;
 }
 
@@ -195,34 +215,236 @@
   }
 }
 
-.header-locale {
+.header-actions {
+  position: relative;
+  display: flex;
+  align-items: center;
+  align-self: stretch;
   justify-self: end;
+  /* Compact right cluster; slightly more air than locale↔icon collision */
+  gap: 1.375rem; /* 22px */
   min-width: 0;
 }
 
-.locale-switcher {
-  display: flex;
+.header-locale {
+  min-width: 0;
+}
+
+.header-burger {
+  position: relative;
+  display: block;
+  flex-shrink: 0;
+}
+
+.header-burger-toggle {
+  display: inline-flex;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: center;
+  box-sizing: border-box;
+  width: 2.75rem; /* 44px tap */
+  height: 2.75rem;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--ink);
+  border-radius: 2px;
+  cursor: pointer;
+}
+
+/*
+  Burger icon — three identical SVG rects (viewBox 24×14, lines 24×2).
+  Overrides globals `svg { height: auto }`.
+*/
+.header-burger-icon {
+  display: block;
+  width: 24px;
+  height: 14px;
+  max-width: none;
+  flex-shrink: 0;
+  overflow: visible;
+}
+
+.header-burger-line {
+  fill: #171717;
+  transform-box: fill-box;
+  transform-origin: center;
+  transition:
+    transform 200ms ease,
+    opacity 160ms ease;
+}
+
+.header-burger-toggle.is-open .header-burger-line:nth-child(1) {
+  transform: translateY(6px) rotate(45deg);
+}
+
+.header-burger-toggle.is-open .header-burger-line:nth-child(2) {
+  opacity: 0;
+}
+
+.header-burger-toggle.is-open .header-burger-line:nth-child(3) {
+  transform: translateY(-6px) rotate(-45deg);
+}
+
+/*
+  Burger panel — white surface on canvas so it separates from the page.
+  Active page = brand text only (no red fill).
+*/
+.header-burger-panel {
+  position: absolute;
+  top: calc(100% + 0.25rem);
+  right: 0;
+  z-index: 60;
+  box-sizing: border-box;
+  width: min(17.5rem, calc(100vw - (2 * var(--page-inline)))); /* 280px */
+  margin: 0;
+  padding: 0;
+  overflow: clip;
+  background: #ffffff;
+  border: 1px solid #e3e3e3;
+  border-radius: 6px;
+  color: var(--ink);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-0.35rem);
+  pointer-events: none;
+  transition:
+    opacity 180ms ease,
+    transform 180ms ease,
+    visibility 180ms ease;
+}
+
+.header-burger-panel.is-open {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.header-burger-list {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0.375rem 0;
+  list-style: none;
+}
+
+.header-burger-item {
+  margin: 0;
+  padding: 0;
+}
+
+.header-burger-item + .header-burger-item {
+  border-top: 1px solid #e3e3e3;
+}
+
+.header-burger-link {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  padding: 0.9375rem 1.25rem;
+  font-family: var(--font-family-sans);
+  font-size: 1.125rem; /* 18px */
+  font-weight: 500;
+  line-height: 1.25;
+  color: var(--ink);
+  text-decoration: none;
+  text-align: start;
+  white-space: nowrap;
+  border-radius: 0;
+  background: transparent;
+  transition: color 200ms ease, background-color 200ms ease;
+}
+
+.header-burger-link.is-active {
+  color: #b3262d;
+  background: transparent;
+  font-weight: 500;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .header-burger-link:hover {
+    color: #b3262d;
+    background: color-mix(in srgb, var(--ink) 4%, transparent);
+  }
+
+  .header-burger-link.is-active:hover {
+    color: #b3262d;
+    background: color-mix(in srgb, var(--ink) 4%, transparent);
+  }
+}
+
+.header-burger-link:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--ink) 40%, transparent);
+  outline-offset: -2px;
+}
+
+/* One hit target — toggles to the other locale */
+.locale-switcher {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  min-height: 2.75rem;
+  padding-inline: 0.5rem;
+  margin: 0;
+  border-radius: 2px;
   font-family: var(--font-family-sans);
   font-size: var(--text-button);
   line-height: 1.2;
   white-space: nowrap;
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
 }
 
 .locale-sep {
-  padding-inline: 0.35em;
+  padding-inline: 0.4em;
   color: var(--ink-muted);
   font-weight: 400;
-}
-
-.locale-active {
-  color: var(--ink);
-  font-weight: 500;
-  cursor: default;
   user-select: none;
 }
 
+/* Tablet: slightly larger locale type to balance eased logo */
+@media (min-width: 768px) {
+  .locale-switcher {
+    font-size: 0.875rem; /* 14px — balance compact Tablet logo */
+  }
+}
+
+/* Desktop — restore approved Header locale chrome (no touch padding) */
+@media (min-width: 1024px) {
+  .locale-switcher {
+    display: flex;
+    justify-content: flex-end;
+    min-height: 0;
+    padding-inline: 0;
+    font-size: var(--text-button); /* 17px */
+  }
+
+  .locale-sep {
+    padding-inline: 0.35em;
+  }
+}
+
+.locale-label {
+  color: var(--ink-muted);
+  font-weight: 400;
+  user-select: none;
+}
+
+.locale-label.is-active {
+  color: var(--ink);
+  font-weight: 500;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .locale-switcher:hover .locale-label:not(.is-active) {
+    color: color-mix(in srgb, var(--ink-muted) 70%, var(--brand));
+  }
+}
+
+/* Legacy hooks kept for shared focus / motion lists */
 .locale-link {
   color: var(--ink-muted);
   font-weight: 400;
@@ -231,6 +453,12 @@
   cursor: pointer;
 }
 
+.locale-active {
+  color: var(--ink);
+  font-weight: 500;
+}
+
+/* Approved sticky Header — Homepage / Catalog / Contacts / Category at rest */
 .site-header {
   position: sticky;
   top: 0;
@@ -244,6 +472,87 @@
 
 .site-header.is-scrolled {
   border-bottom-color: #e3e3e3;
+}
+
+/*
+  Category hide-on-scroll: Header + Sticky share the same translate.
+  Sticky `top` stays --header-height (never animates). When hidden, both move
+  up by one header height — the joint stays closed, no snap.
+*/
+html:has(.category-sticky-nav) {
+  --header-offset: var(--header-height);
+}
+
+html:has(.category-sticky-nav):has(.site-header.is-header-hidden) {
+  --header-offset: 0px; /* scroll-margin / cover math only */
+}
+
+body:has(.category-sticky-nav) .site-header {
+  box-sizing: border-box;
+  height: var(--header-height);
+  border-bottom: none;
+  transition: transform 220ms ease;
+}
+
+body:has(.category-sticky-nav) .site-header.is-scrolled,
+body:has(.category-sticky-nav) .site-header.is-header-hidden {
+  border-bottom: none;
+}
+
+body:has(.category-sticky-nav) .site-header > .container {
+  height: 100%;
+  box-sizing: border-box;
+}
+
+body:has(.category-sticky-nav) .header-bar {
+  height: 100%;
+  min-height: 0;
+}
+
+body:has(.category-sticky-nav) .site-header.is-header-hidden {
+  transform: translate3d(0, calc(-1 * var(--header-height)), 0);
+  pointer-events: none;
+}
+
+/* Move with Header — same duration/easing/distance */
+body:has(.category-sticky-nav) .category-sticky-nav {
+  top: var(--header-height);
+  transition: transform 220ms ease;
+  box-shadow: 0 -1px 0 0 #efefeb;
+}
+
+body:has(.site-header.is-header-hidden) .category-sticky-nav {
+  transform: translate3d(0, calc(-1 * var(--header-height)), 0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body:has(.category-sticky-nav) .site-header,
+  body:has(.category-sticky-nav) .category-sticky-nav {
+    transition: none;
+  }
+}
+
+@media (min-width: 1024px) {
+  .header-bar {
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  }
+
+  .header-nav {
+    display: block;
+    justify-self: center;
+  }
+
+  .header-burger {
+    display: none;
+  }
+
+  .header-actions {
+    gap: 0;
+  }
+
+  .header-locale {
+    justify-self: end;
+  }
 }
 
 .accent-bar {
@@ -335,6 +644,19 @@
   pointer-events: none;
 }
 
+/* After base max — tablet shell aligns copy with Header .container */
+@media (min-width: 768px) {
+  .hero-content {
+    max-width: var(--layout-max-tablet);
+  }
+}
+
+@media (min-width: 1024px) {
+  .hero-content {
+    max-width: var(--page-max);
+  }
+}
+
 .hero-content > * {
   pointer-events: auto;
 }
@@ -401,6 +723,61 @@
   top: 502px; /* Figma 4:11 — gap after body box = 79px */
 }
 
+/*
+  Tablet (≥768): keep eyebrow/title tops (same vertical anchor as Desktop).
+  Only re-anchor body/CTA — Desktop tops assume 58px H1 (~128px box);
+  36px tablet H1 (~79px) left ~78px of air. Desktop restores Figma tops.
+
+  EN body: forced line1 is much longer than UK; allow natural wrap at the
+  UK measure so lines balance. UK keeps Desktop-style forced breaks.
+*/
+@media (min-width: 768px) {
+  .hero-body {
+    top: 307px; /* 212 + 79 + 16 — compact title→body */
+  }
+
+  .hero-body:lang(en) {
+    white-space: normal;
+    /* 348px: wraps before "solutions", keeps "ready-made" intact */
+    max-width: 21.75rem;
+  }
+
+  .hero-body:lang(en) .hero-body-line {
+    display: inline;
+  }
+
+  .hero-body:lang(en) .hero-body-line + .hero-body-line::before {
+    content: " ";
+  }
+
+  .hero-cta {
+    top: 400px; /* 307 + 45 + 48 */
+  }
+}
+
+@media (min-width: 1024px) {
+  .hero-body {
+    top: 369px;
+  }
+
+  .hero-body:lang(en) {
+    white-space: nowrap;
+    max-width: none;
+  }
+
+  .hero-body:lang(en) .hero-body-line {
+    display: block;
+  }
+
+  .hero-body:lang(en) .hero-body-line + .hero-body-line::before {
+    content: none;
+  }
+
+  .hero-cta {
+    top: 502px;
+  }
+}
+
 /* About + Advantages — Figma section 880 */
 .about-advantages {
   background: var(--canvas);
@@ -457,13 +834,44 @@
   text-align: center;
 }
 
+/*
+  Advantages grid — mobile-first (no max-width: 1023 ceiling).
+  Mobile: 1 col. Tablet ≥768: one centered 2×2 cluster (Figma 2×320 + 66).
+  Desktop ≥1024: 4-col override (same rule wins by cascade, not a gap band).
+*/
 .advantages-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--grid-gap-advantages);
   width: 100%;
   margin-top: 4.25rem; /* numbers at 468 from heading 356 */
+  min-width: 0;
+}
+
+@media (min-width: 768px) {
+  .advantages-grid {
+    /* Figma Tablet: 320 + 66 + 320 = 706 — same cluster at 768…1023 */
+    width: min(100%, calc(20rem * 2 + 4.125rem));
+    margin-inline: auto;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 4.125rem;
+    row-gap: 4.125rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .advantages-grid {
+    width: 100%;
+    margin-inline: 0;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    column-gap: var(--grid-gap-advantages); /* 72px desktop token */
+    row-gap: var(--grid-gap-advantages);
+  }
 }
 
 .advantage-card {
   min-width: 0;
+  text-align: start;
 }
 
 .advantage-number {
@@ -518,11 +926,12 @@
   text-decoration: none;
   white-space: nowrap;
   border-radius: 2px;
-  transition: opacity 160ms ease;
+  transition: color 200ms ease;
 }
 
-.footer-phone:hover {
-  opacity: 0.75;
+.footer-phone:hover,
+.footer-phone:focus-visible {
+  color: var(--brand);
 }
 
 .footer-schedule {
@@ -610,11 +1019,15 @@
   text-underline-position: from-font;
   text-decoration-skip-ink: none;
   border-radius: 2px;
-  transition: opacity 160ms ease;
 }
 
-a.footer-credit-name:hover {
-  opacity: 0.75;
+a.footer-credit-name {
+  transition: color 200ms ease;
+}
+
+a.footer-credit-name:hover,
+a.footer-credit-name:focus-visible {
+  color: var(--brand);
 }
 
 /*
@@ -631,25 +1044,26 @@ a.footer-credit-name:hover {
 }
 
 /*
-  Catalog — Figma Catalog Desktop (102:2).
-  Intro + 3×4 category grid (400×280, col-gap 48, row-gap 40).
+  Catalog — mobile 1-col → tablet 2-col (Figma 285:2 @834) → desktop 3-col (102:2).
+  Tablet band 768–1023: 2-col fluid, gap 16, pad 32, tile height 200
+  (at 834: 2×377). Desktop ≥1024: 400×280, col-gap 48, row-gap 40.
 */
 .catalog-page {
   background: var(--canvas);
   color: var(--ink);
-  padding-bottom: 8.125rem; /* 130px grid → footer (1602 − 1472) */
+  padding-bottom: 4.5rem;
 }
 
 .catalog-intro {
-  padding-top: 2.5rem; /* 40px: heading at 112 under header 72 */
-  padding-bottom: 2.3125rem; /* 37px → grid at 232 */
+  padding-top: 2rem;
+  padding-bottom: 1.5rem;
 }
 
 .catalog-heading {
   margin: 0;
   max-width: 31.25rem; /* 500px */
   font-family: var(--font-family-sans);
-  font-size: var(--text-section); /* 38px desktop */
+  font-size: var(--text-section); /* 30px mobile/tablet · 38px desktop */
   font-weight: 500;
   line-height: var(--text-section-leading);
   color: var(--ink);
@@ -666,9 +1080,9 @@ a.footer-credit-name:hover {
 
 .catalog-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  column-gap: 3rem; /* 48px */
-  row-gap: 2.5rem; /* 40px */
+  grid-template-columns: minmax(0, 1fr);
+  column-gap: 1rem;
+  row-gap: 1rem;
   margin: 0;
   padding: 0;
   list-style: none;
@@ -677,7 +1091,10 @@ a.footer-credit-name:hover {
 .category-card {
   position: relative;
   display: block;
-  aspect-ratio: 400 / 280;
+  width: 100%;
+  /* Mobile: near Figma tablet ratio; tablet shell locks ~377×200 @834 */
+  aspect-ratio: 377 / 200;
+  height: auto;
   overflow: clip;
   border: 1px solid rgb(23 23 23 / 0.55);
   border-radius: 10px;
@@ -701,17 +1118,17 @@ a.footer-credit-name:hover {
   align-items: center;
   justify-content: center;
   box-sizing: border-box;
-  min-height: 2.375rem; /* 38px single-line baseline */
+  min-height: 2.5rem; /* 40px tablet caption bar */
   height: auto;
-  padding: 0.4375rem 1.25rem; /* room for up to two 19px / 1.25 lines */
+  padding: 0.375rem 0.875rem;
   background: color-mix(in srgb, var(--canvas) 76%, transparent);
 }
 
 .category-card-name {
   font-family: var(--font-family-sans);
-  font-size: var(--text-body); /* 19px desktop */
+  font-size: var(--text-button); /* 15px below desktop */
   font-weight: 500;
-  line-height: 1.25;
+  line-height: 1.2;
   text-align: center;
   white-space: normal;
   overflow-wrap: break-word;
@@ -725,9 +1142,65 @@ a.footer-credit-name:hover {
   }
 }
 
+@media (min-width: 768px) {
+  .catalog-page {
+    padding-bottom: 6.75rem; /* ~108px grid → footer (Figma 1616 − 1508) */
+  }
+
+  .catalog-intro {
+    padding-top: 2.25rem; /* 36px: heading at 108 under header 72 */
+    padding-bottom: 2rem; /* → grid at 208 */
+  }
+
+  .catalog-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 1rem; /* 16px */
+    row-gap: 1.25rem; /* 20px (428 − 208 − 200) */
+  }
+
+  .category-card {
+    aspect-ratio: 377 / 200; /* Figma Catalog Tablet tiles */
+  }
+}
+
+@media (min-width: 1024px) {
+  .catalog-page {
+    padding-bottom: 8.125rem; /* 130px grid → footer (1602 − 1472) */
+  }
+
+  .catalog-intro {
+    padding-top: 2.5rem; /* 40px: heading at 112 under header 72 */
+    padding-bottom: 2.3125rem; /* 37px → grid at 232 */
+  }
+
+  .catalog-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    column-gap: 3rem; /* 48px */
+    row-gap: 2.5rem; /* 40px */
+  }
+
+  .category-card {
+    height: auto;
+    aspect-ratio: 400 / 280;
+  }
+
+  .category-card-caption {
+    min-height: 2.375rem; /* 38px single-line baseline */
+    padding: 0.4375rem 1.25rem; /* room for up to two 19px / 1.25 lines */
+  }
+
+  .category-card-name {
+    font-size: var(--text-body); /* 19px desktop */
+    line-height: 1.25;
+  }
+}
+
 /* Shared focus-visible — subtle, not brand-red */
 .header-logo:focus-visible,
 .header-nav-link:focus-visible,
+.header-burger-toggle:focus-visible,
+.header-burger-link:focus-visible,
+.locale-switcher:focus-visible,
 .locale-link:focus-visible,
 .primary-button:focus-visible,
 .category-card:focus-visible,
@@ -752,21 +1225,33 @@ a.footer-credit-name:focus-visible {
   .site-header,
   .header-nav-link,
   .header-nav-link::after,
+  .header-burger-line,
+  .header-burger-panel,
+  .header-burger-link,
+  .locale-switcher,
+  .locale-link,
   .primary-button,
   .category-card-image,
   .footer-phone,
   .footer-social img,
   a.footer-credit-name,
   .category-sticky-chevron,
-  .category-floating-cta {
+  .category-floating-cta,
+  .category-empty-link,
+  .product-card-size-option,
+  .product-card-desc-toggle {
     transition: none;
   }
 
   .primary-button:hover,
   .category-card:hover .category-card-image,
-  .footer-social:hover img,
-  .category-floating-cta:hover {
+  .footer-social:hover img {
     transform: none;
+  }
+
+  /* Keep vertical centering; only background transitions are disabled above */
+  .category-floating-cta:hover {
+    transform: translateY(-50%);
   }
 }
 
@@ -788,8 +1273,12 @@ a.footer-credit-name:focus-visible {
   top: var(--header-height);
   z-index: 40;
   width: 100%;
-  background: var(--canvas);
-  border-bottom: 1px solid transparent;
+  background: #efefeb;
+  border-bottom: 1px solid #e3e3e3;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  filter: none;
+  box-shadow: none;
 }
 
 .category-sticky-nav-inner {
@@ -799,16 +1288,18 @@ a.footer-credit-name:focus-visible {
   max-width: var(--page-max);
   margin-inline: auto;
   padding-inline: var(--page-inline);
-  height: 3.25rem; /* 52px */
+  height: var(--sticky-nav-height);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 1.5rem;
+  gap: 1rem;
+  min-width: 0;
 }
 
 .category-sticky-category-label {
   margin: 0;
   min-width: 0;
+  flex: 1 1 auto;
   font-family: var(--font-family-sans);
   font-size: var(--text-nav);
   font-weight: 500;
@@ -821,7 +1312,9 @@ a.footer-credit-name:focus-visible {
 
 .category-sticky-right {
   position: relative;
-  flex-shrink: 0;
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: 58%;
 }
 
 .category-sticky-trigger {
@@ -829,6 +1322,9 @@ a.footer-credit-name:focus-visible {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
+  box-sizing: border-box;
+  max-width: 100%;
+  min-width: 0;
   margin: 0;
   padding: 0 0 0.125rem;
   border: none;
@@ -843,10 +1339,14 @@ a.footer-credit-name:focus-visible {
 }
 
 .category-sticky-subcategory {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .category-sticky-chevron {
+  flex-shrink: 0;
   width: 20px;
   height: 20px;
   transition: transform 160ms ease;
@@ -865,32 +1365,46 @@ a.footer-credit-name:focus-visible {
   background: var(--brand);
 }
 
+/*
+  Subcategory dropdown — same chrome language as Header burger panel:
+  white surface, #e3e3e3 rules, brand text for active (no fill).
+*/
 .category-sticky-menu {
   position: absolute;
-  top: calc(100% + 0.75rem);
+  top: calc(100% + 0.25rem);
   right: 0;
   z-index: 45;
   box-sizing: border-box;
-  width: min(22.125rem, calc(100vw - 2 * var(--page-inline)));
+  width: min(17.5rem, calc(100vw - (2 * var(--page-inline)))); /* 280px */
   max-height: min(70vh, 28rem);
   overflow: auto;
   margin: 0;
-  padding: 0.75rem 0 1rem;
+  padding: 0.375rem 0;
   list-style: none;
-  background: var(--canvas);
+  background: #ffffff;
   border: 1px solid #e3e3e3;
-  border-radius: 8px;
-  box-shadow: 0 12px 32px rgb(23 23 23 / 0.08);
+  border-radius: 6px;
+  color: var(--ink);
+  box-shadow: none;
 }
 
 .category-sticky-group {
-  padding: 0.85rem 1.5rem 0.35rem;
+  padding: 0.75rem 1.25rem 0.35rem;
   font-family: var(--font-family-sans);
-  font-size: 0.8125rem;
+  font-size: 0.75rem;
   font-weight: 500;
   letter-spacing: 0.04em;
   text-transform: uppercase;
   color: var(--ink-muted);
+}
+
+.category-sticky-item {
+  margin: 0;
+  padding: 0;
+}
+
+.category-sticky-menu > li + li {
+  border-top: 1px solid #e3e3e3;
 }
 
 .category-sticky-option {
@@ -898,26 +1412,39 @@ a.footer-credit-name:focus-visible {
   width: 100%;
   box-sizing: border-box;
   margin: 0;
-  padding: 0.875rem 1.5rem; /* ≈14 / 24 */
+  padding: 0.9375rem 1.25rem;
   border: none;
+  border-radius: 0;
   background: transparent;
   color: var(--ink);
   font-family: var(--font-family-sans);
-  font-size: 1.0625rem; /* 17px */
-  font-weight: 400;
-  line-height: 1.3;
-  text-align: left;
+  font-size: 1.125rem; /* 18px — match burger links */
+  font-weight: 500;
+  line-height: 1.25;
+  text-align: start;
+  white-space: normal;
+  overflow-wrap: anywhere;
   cursor: pointer;
+  transition: color 200ms ease;
 }
 
-.category-sticky-option.is-active,
-.category-sticky-option:hover {
-  color: var(--brand);
+.category-sticky-option.is-active {
+  color: #b3262d;
+  background: transparent;
+  font-weight: 500;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .category-sticky-option:hover,
+  .category-sticky-option.is-active:hover {
+    color: #b3262d;
+    background: transparent;
+  }
 }
 
 .category-section {
   padding-top: 4.25rem; /* 68px: content top 208 under header+nav ≈ 72+52+68 */
-  scroll-margin-top: calc(var(--header-height) + 3.25rem);
+  scroll-margin-top: calc(var(--header-height) + var(--sticky-nav-height));
 }
 
 .category-section--sale {
@@ -971,7 +1498,7 @@ a.footer-credit-name:focus-visible {
 }
 
 .product-card {
-  scroll-margin-top: calc(var(--header-height) + 3.25rem);
+  scroll-margin-top: calc(var(--header-height) + var(--sticky-nav-height));
   display: grid;
   grid-template-columns: minmax(0, 36.875rem) minmax(0, 1fr); /* 590 + rest */
   column-gap: 6rem; /* 96px → info at x686 */
@@ -1078,8 +1605,12 @@ a.footer-credit-name:focus-visible {
   color: var(--ink);
 }
 
-.product-card-share {
+.product-card-share-wrap {
+  position: relative;
   flex-shrink: 0;
+}
+
+.product-card-share {
   display: grid;
   place-items: center;
   width: 1.75rem;
@@ -1099,9 +1630,53 @@ a.footer-credit-name:focus-visible {
 }
 
 .product-card-share-note {
-  margin: 0.35rem 0 0;
-  font-size: 0.875rem;
-  color: var(--ink-muted);
+  position: absolute;
+  top: calc(100% + 0.35rem);
+  right: 0;
+  z-index: 5;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin: 0;
+  padding: 0.35rem 0.55rem;
+  border: 1px solid #e3e3e3;
+  border-radius: 4px;
+  background: var(--canvas);
+  box-shadow: 0 4px 14px rgb(23 23 23 / 0.08);
+  font-family: var(--font-family-sans);
+  font-size: 0.8125rem;
+  font-weight: 400;
+  line-height: 1.2;
+  color: var(--ink);
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(-2px);
+  transition:
+    opacity 180ms ease,
+    transform 180ms ease;
+}
+
+.product-card-share-note.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.product-card-share-check {
+  display: grid;
+  place-items: center;
+  color: var(--ink);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .product-card-share-note {
+    transition: none;
+    transform: none;
+  }
+
+  .product-card-share-note.is-visible {
+    transform: none;
+  }
 }
 
 .product-card-meta {
@@ -1122,14 +1697,22 @@ a.footer-credit-name:focus-visible {
   color: var(--ink-muted);
 }
 
-.product-card-size-block {
+/* Shared geometry for Size control + Specifications accordion trigger */
+.product-card-size-block,
+.product-card-specs {
+  --product-field-width: 13.125rem; /* 210px */
   position: relative;
+  box-sizing: border-box;
+  /* Fixed band (not 100% of different parents) so Size + Specs match */
+  width: var(--product-field-width);
+  max-width: 100%;
   min-width: 0;
 }
 
 .product-card-size-value {
   margin: 0;
-  max-width: 13.125rem;
+  width: 100%;
+  max-width: none;
   min-height: 2.75rem;
   padding: 0.5rem 0;
   border-top: 1px solid #e3e3e3;
@@ -1139,6 +1722,7 @@ a.footer-credit-name:focus-visible {
   font-weight: 500;
   line-height: 1.25;
   color: var(--ink);
+  overflow-wrap: anywhere;
 }
 
 .product-card-size-trigger {
@@ -1148,7 +1732,7 @@ a.footer-credit-name:focus-visible {
   gap: 0.5rem;
   box-sizing: border-box;
   width: 100%;
-  max-width: 13.125rem; /* 210px */
+  max-width: none;
   min-height: 2.75rem; /* 44px */
   margin: 0;
   padding: 0.5rem 0;
@@ -1202,6 +1786,7 @@ a.footer-credit-name:focus-visible {
   line-height: 1.2;
   text-align: left;
   cursor: pointer;
+  transition: color 200ms ease;
 }
 
 .product-card-size-option.is-active,
@@ -1282,11 +1867,16 @@ a.footer-credit-name:focus-visible {
   line-height: 1.4;
   cursor: pointer;
   border-radius: 2px;
+  transition: color 200ms ease;
+}
+
+.product-card-desc-toggle:hover,
+.product-card-desc-toggle:focus-visible {
+  color: var(--brand);
 }
 
 .product-card-specs {
   margin-top: 1.75rem;
-  max-width: 13.125rem; /* 210px */
 }
 
 .product-card-specs-trigger {
@@ -1296,7 +1886,8 @@ a.footer-credit-name:focus-visible {
   gap: 0.5rem;
   box-sizing: border-box;
   width: 100%;
-  min-height: 2.625rem; /* 42px */
+  max-width: none;
+  min-height: 2.75rem; /* match Size control */
   margin: 0;
   padding: 0.5rem 0;
   border: none;
@@ -1305,11 +1896,12 @@ a.footer-credit-name:focus-visible {
   background: transparent;
   color: var(--ink);
   font-family: var(--font-family-sans);
-  font-size: 0.9375rem; /* 15px */
+  font-size: 0.9375rem; /* 15px — lighter accordion cue vs Size dropdown */
   font-weight: 400;
   line-height: 1.2;
   text-align: left;
   cursor: pointer;
+  overflow-wrap: anywhere;
 }
 
 .product-card-specs-panel {
@@ -1339,6 +1931,235 @@ a.footer-credit-name:focus-visible {
   margin: 0;
   color: var(--ink);
   font-weight: 400;
+}
+
+/*
+  Tablet Category (≥768): one content column + vertical Product Card.
+  Sticky nav / H2 / gallery / info share the 834 shell left edge.
+  Gallery is NOT independently centered. Desktop restored at ≥1024.
+*/
+@media (min-width: 768px) {
+  .category-sticky-nav-inner {
+    max-width: var(--layout-max-tablet);
+  }
+
+  /* Left category + right subcategory — same type weight on Tablet */
+  .category-sticky-category-label,
+  .category-sticky-trigger {
+    color: var(--ink);
+    font-family: var(--font-family-sans);
+    font-size: 1rem; /* 16px */
+    font-weight: 500;
+    line-height: 1.25;
+  }
+
+  .category-section-heading {
+    font-size: 1.8125rem; /* 29px */
+    line-height: 1.15;
+    font-weight: 500;
+  }
+
+  .category-section-header {
+    margin-bottom: 1.75rem;
+  }
+
+  .category-product-list {
+    gap: 3.25rem;
+  }
+
+  /* Clear fixed vertical CTA without breaking the left grid edge */
+  .category-page > .container {
+    padding-inline-end: calc(var(--page-inline) + 3.5rem);
+  }
+
+  .product-card {
+    grid-template-columns: minmax(0, 1fr);
+    column-gap: 0;
+    row-gap: 1rem;
+    width: 100%;
+    max-width: 38.75rem; /* 620 — shared card column */
+  }
+
+  .product-card-gallery {
+    width: 100%;
+    max-width: 36.875rem; /* 590 — media frame */
+    margin-inline: 0; /* left-align with info / H2 / sticky */
+  }
+
+  .product-card-info {
+    max-width: 38.75rem; /* 620 */
+    width: 100%;
+  }
+
+  .product-card-title {
+    max-width: none;
+    font-size: 1.4375rem; /* 23px */
+    line-height: 1.2;
+    font-weight: 500;
+  }
+
+  .product-card-meta {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    column-gap: 1.75rem;
+    margin-top: 1.25rem;
+  }
+
+  .product-card-field-label {
+    font-size: 0.8125rem; /* 13px */
+  }
+
+  .product-card-size-block,
+  .product-card-specs {
+    --product-field-width: 16rem; /* shared Size + Specs band */
+  }
+
+  .product-card-size-value,
+  .product-card-size-trigger {
+    font-size: 0.9375rem; /* 15px */
+  }
+
+  .product-card-price {
+    font-size: 1.375rem; /* 22px */
+    white-space: nowrap;
+  }
+
+  .product-card-compare,
+  .product-card-discount {
+    font-size: 0.9375rem; /* 15px */
+  }
+
+  .product-card-desc-block {
+    max-width: 36.25rem; /* 580 — reading measure */
+    margin-top: 1.25rem;
+  }
+
+  .product-card-desc {
+    font-size: 0.9375rem; /* 15px */
+    line-height: 1.45;
+  }
+
+  .product-card-desc-toggle {
+    font-size: 0.875rem; /* 14px */
+  }
+
+  .product-card-specs {
+    margin-top: 1.25rem;
+  }
+
+  .product-card-specs-trigger,
+  .product-card-spec-row {
+    font-size: 0.875rem; /* 14px */
+  }
+}
+
+@media (min-width: 1024px) {
+  .category-sticky-nav-inner {
+    max-width: var(--page-max);
+  }
+
+  .category-sticky-category-label {
+    color: var(--ink);
+    font-size: var(--text-nav);
+  }
+
+  .category-sticky-trigger {
+    font-size: var(--text-nav);
+  }
+
+  .category-section-heading {
+    font-size: var(--text-section);
+    line-height: var(--text-section-leading);
+  }
+
+  .category-section-header {
+    margin-bottom: 2.5rem;
+  }
+
+  .category-product-list {
+    gap: 4rem;
+  }
+
+  .category-page > .container {
+    padding-inline-end: var(--page-inline);
+  }
+
+  .product-card {
+    grid-template-columns: minmax(0, 36.875rem) minmax(0, 1fr);
+    column-gap: 6rem;
+    row-gap: 0;
+    max-width: none;
+  }
+
+  .product-card-gallery {
+    max-width: none;
+    margin-inline: 0;
+  }
+
+  .product-card-info {
+    max-width: 38.125rem;
+  }
+
+  .product-card-title {
+    max-width: 29.375rem;
+    font-size: var(--text-card-title);
+    line-height: 1.18;
+  }
+
+  .product-card-meta {
+    grid-template-columns: minmax(0, 13.125rem) minmax(0, 1fr);
+    column-gap: 7.5rem;
+    margin-top: 2.25rem;
+  }
+
+  .product-card-field-label {
+    font-size: 0.9375rem;
+  }
+
+  .product-card-size-block,
+  .product-card-specs {
+    --product-field-width: 13.125rem;
+  }
+
+  .product-card-size-value,
+  .product-card-size-trigger {
+    font-size: var(--text-nav);
+  }
+
+  .product-card-price {
+    font-size: var(--text-card-title);
+    white-space: normal;
+  }
+
+  .product-card-compare,
+  .product-card-discount {
+    font-size: 1.0625rem;
+  }
+
+  .product-card-desc-block {
+    max-width: 35rem;
+    margin-top: 2rem;
+  }
+
+  .product-card-desc {
+    font-size: 1.0625rem;
+    line-height: 1.4;
+  }
+
+  .product-card-desc-toggle {
+    font-size: 0.9375rem;
+  }
+
+  .product-card-specs {
+    margin-top: 1.75rem;
+  }
+
+  .product-card-specs-trigger {
+    font-size: 0.9375rem;
+  }
+
+  .product-card-spec-row {
+    font-size: 0.9375rem;
+  }
 }
 
 .category-empty {
@@ -1373,13 +2194,17 @@ a.footer-credit-name:focus-visible {
   font-weight: 500;
   text-decoration: none;
   border-radius: 2px;
+  transition: color 200ms ease;
 }
 
-.category-empty-link:hover {
+.category-empty-link:hover,
+.category-empty-link:focus-visible {
   color: var(--brand);
 }
 
-/* Vertical contact tab — right edge (project doc) */
+/* Vertical contact tab — right edge (project doc).
+   Declared after tablet/desktop product blocks so width tokens here win
+   the cascade; desktop bumps width below. */
 .category-floating-cta {
   position: fixed;
   top: 50%;
@@ -1389,15 +2214,15 @@ a.footer-credit-name:focus-visible {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 0.75rem;
+  gap: 0.55rem;
   box-sizing: border-box;
-  min-width: 3.25rem;
-  padding: 1.25rem 0.7rem;
+  width: 2.75rem;
+  padding: 1rem 0.55rem;
   border-radius: 0.5rem 0 0 0.5rem;
   background: var(--surface-inverse);
   color: #fafafa;
   font-family: var(--font-family-sans);
-  font-size: 1rem;
+  font-size: 0.9375rem;
   font-weight: 500;
   line-height: 1.2;
   text-decoration: none;
@@ -1405,8 +2230,47 @@ a.footer-credit-name:focus-visible {
   transition: background-color 160ms ease;
 }
 
+/* Tablet / below Desktop — keep lighten hover */
 .category-floating-cta:hover {
   background: color-mix(in srgb, var(--surface-inverse) 88%, white);
+}
+
+@media (min-width: 1024px) {
+  .category-floating-cta {
+    width: 3.25rem;
+    padding: 1.25rem 0.7rem;
+    font-size: 1rem;
+    gap: 0.75rem;
+    transform-origin: center right;
+    /* Match Hero primary CTA motion (scale 1.02 / 160ms ease) */
+    transition: transform 160ms ease;
+  }
+
+  .category-floating-cta:hover {
+    background: var(--surface-inverse);
+    transform: translateY(-50%) scale(1.02);
+  }
+}
+
+/* Stack locale strings so outer size follows the longest label. */
+.category-floating-cta-label-slot {
+  display: grid;
+  place-items: center;
+}
+
+.category-floating-cta-sizer {
+  display: grid;
+  grid-area: 1 / 1;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.category-floating-cta-sizer .category-floating-cta-label {
+  grid-area: 1 / 1;
+}
+
+.category-floating-cta-label-slot > .category-floating-cta-label {
+  grid-area: 1 / 1;
 }
 
 .category-floating-cta-label {
@@ -1416,6 +2280,7 @@ a.footer-credit-name:focus-visible {
   text-orientation: sideways;
   transform: rotate(180deg);
   white-space: nowrap;
+  text-align: center;
 }
 
 .category-floating-cta-arrow {
@@ -1431,13 +2296,20 @@ a.footer-credit-name:focus-visible {
   z-index: 80;
   display: grid;
   place-items: center;
-  padding: 2rem;
+  padding: max(1rem, env(safe-area-inset-top)) max(1rem, env(safe-area-inset-right))
+    max(1rem, env(safe-area-inset-bottom)) max(1rem, env(safe-area-inset-left));
+  overscroll-behavior: none;
+  touch-action: none;
 }
 
 .product-lightbox-backdrop {
   position: absolute;
   inset: 0;
+  margin: 0;
+  padding: 0;
+  border: none;
   background: rgb(23 23 23 / 0.72);
+  cursor: pointer;
 }
 
 .product-lightbox-panel {
@@ -1445,11 +2317,12 @@ a.footer-credit-name:focus-visible {
   z-index: 1;
   box-sizing: border-box;
   width: min(46rem, 100%);
-  max-height: calc(100vh - 4rem);
+  max-height: min(100dvh - 2rem, 100vh - 2rem);
   overflow: hidden;
   padding: 1.25rem 1.25rem 1rem;
   border-radius: 10px;
   background: var(--canvas);
+  touch-action: manipulation;
 }
 
 .product-lightbox-header {
@@ -1471,7 +2344,7 @@ a.footer-credit-name:focus-visible {
   display: grid;
   place-items: center;
   flex-shrink: 0;
-  width: 2.75rem;
+  width: 2.75rem; /* 44px */
   height: 2.75rem;
   margin: 0;
   padding: 0;
@@ -1487,16 +2360,35 @@ a.footer-credit-name:focus-visible {
   opacity: 0.72;
 }
 
+/* Arrows sit beside the image (not over it) so they stay visible on dark photos */
+.product-lightbox-viewer {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: center;
+  gap: 0.35rem;
+  min-width: 0;
+}
+
+.product-lightbox-viewer.has-nav {
+  grid-template-columns: 2.75rem minmax(0, 1fr) 2.75rem;
+}
+
 .product-lightbox-stage {
+  position: relative;
   display: grid;
   place-items: center;
+  min-width: 0;
+  min-height: 12rem;
+  touch-action: none;
+  user-select: none;
 }
 
 .product-lightbox-image {
   display: block;
   width: 100%;
-  max-height: calc(100vh - 14rem);
+  max-height: min(70dvh, calc(100vh - 14rem));
   object-fit: contain;
+  pointer-events: none;
 }
 
 .product-lightbox-placeholder {
@@ -1507,6 +2399,60 @@ a.footer-credit-name:focus-visible {
   border-radius: 8px;
   background: var(--product-placeholder-a);
   color: var(--ink-muted);
+  pointer-events: none;
+}
+
+/* Minimal arrows — transparent 44×44 hit target, no chrome */
+.product-lightbox-nav {
+  display: grid;
+  place-items: center;
+  box-sizing: border-box;
+  width: 2.75rem; /* 44px */
+  height: 2.75rem;
+  margin: 0;
+  padding: 0;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  color: var(--ink);
+  font-family: var(--font-family-sans);
+  font-size: 1.375rem;
+  line-height: 1;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  /* Soft dual edge so the glyph reads on both light and dark adjacent photos */
+  text-shadow:
+    0 0 0.5px var(--canvas),
+    0 0 2px rgb(250 250 250 / 0.85);
+  transition: color 160ms ease;
+}
+
+.product-lightbox-nav span {
+  pointer-events: none;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .product-lightbox-nav:hover {
+    color: var(--brand);
+  }
+}
+
+@media (orientation: landscape) and (max-height: 560px) {
+  .product-lightbox-panel {
+    padding: 0.75rem 0.75rem 0.65rem;
+  }
+
+  .product-lightbox-header {
+    margin-bottom: 0.5rem;
+  }
+
+  .product-lightbox-image {
+    max-height: min(58dvh, calc(100vh - 9rem));
+  }
+
+  .product-lightbox-controls {
+    margin-top: 0.5rem;
+  }
 }
 
 .product-lightbox-controls {
@@ -1515,7 +2461,9 @@ a.footer-credit-name:focus-visible {
   justify-content: center;
   gap: 1rem;
   margin-top: 1rem;
+  min-height: 1.25rem;
   color: var(--ink-muted);
+  font-size: 0.9375rem;
 }
 
 .category-sticky-trigger:focus-visible,
@@ -1528,6 +2476,8 @@ a.footer-credit-name:focus-visible {
 .product-card-gallery-btn:focus-visible,
 .product-card-media-button:focus-visible,
 .product-lightbox-close:focus-visible,
+.product-lightbox-nav:focus-visible,
+.product-lightbox-backdrop:focus-visible,
 .category-floating-cta:focus-visible,
 .category-empty-link:focus-visible {
   outline: 2px solid color-mix(in srgb, var(--ink) 40%, transparent);
@@ -1658,10 +2608,17 @@ a.footer-credit-name:focus-visible {
 /* Phone / email links stay single-line; schedule <p> may wrap if needed */
 a.contacts-info-value {
   white-space: nowrap;
+  transition: color 200ms ease;
 }
 
-a.contacts-info-value:hover {
-  opacity: 0.8;
+/* Keep 10:00–19:00 as one unit when the schedule line wraps */
+.schedule-time {
+  white-space: nowrap;
+}
+
+a.contacts-info-value:hover,
+a.contacts-info-value:focus-visible {
+  color: var(--brand);
 }
 
 .contacts-socials {
@@ -1781,9 +2738,11 @@ a.contacts-info-value:hover {
   color: var(--ink);
   text-decoration: none;
   border-radius: 2px;
+  transition: color 200ms ease;
 }
 
-.contacts-store-route:hover {
+.contacts-store-route:hover,
+.contacts-store-route:focus-visible {
   color: var(--brand);
 }
 
@@ -1809,6 +2768,8 @@ a.contacts-info-value:hover {
   width: 100%;
   height: 100%;
   z-index: 0;
+  /* One-finger vertical gestures scroll the page; map pan uses two fingers */
+  touch-action: pan-y;
 }
 
 /* Leaflet zoom — clear of map edges; no decorative overlay label */
@@ -1985,7 +2946,9 @@ a.contacts-info-value:hover {
 @media (prefers-reduced-motion: reduce) {
   .faq-panel,
   .contacts-social img,
-  .product-lightbox-close {
+  .product-lightbox-close,
+  a.contacts-info-value,
+  .contacts-store-route {
     transition: none;
   }
 }

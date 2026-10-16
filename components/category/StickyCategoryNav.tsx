@@ -2,6 +2,10 @@
 
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import type { CategoryNavEntry } from "@/lib/category-types";
+import {
+  announceChromeMenu,
+  onForeignChromeMenuOpen,
+} from "@/lib/chrome-menu-bus";
 import type { LocaleField } from "@/lib/locale";
 import { pickLocale } from "@/lib/locale";
 
@@ -23,14 +27,16 @@ function firstSelectableId(nav: CategoryNavEntry[]): string {
   return item?.id ?? "";
 }
 
-/** Header + sticky subcategory bar, measured after layout. */
+/** Visible chrome above content (header may be slid away on Category). */
 function stickyCoverHeight(): number {
   const header = document.querySelector(".site-header");
   const nav = document.querySelector(".category-sticky-nav");
-  return (
-    (header?.getBoundingClientRect().height ?? 0) +
-    (nav?.getBoundingClientRect().height ?? 0)
-  );
+  const headerHidden = header?.classList.contains("is-header-hidden");
+  const headerH = headerHidden
+    ? 0
+    : (header?.getBoundingClientRect().height ?? 0);
+  const navH = nav?.getBoundingClientRect().height ?? 0;
+  return headerH + navH;
 }
 
 function scrollToTarget(target: HTMLElement) {
@@ -64,10 +70,19 @@ export function StickyCategoryNav({
   const [open, setOpen] = useState(false);
   const [activeId, setActiveId] = useState(() => firstSelectableId(nav));
   const rootRef = useRef<HTMLDivElement>(null);
+  const toggleRef = useRef<HTMLButtonElement>(null);
   const listId = useId();
 
   const activeItem =
     selectable.find((item) => item.id === activeId) ?? selectable[0];
+
+  useEffect(() => {
+    return onForeignChromeMenuOpen("category-nav", () => setOpen(false));
+  }, []);
+
+  useEffect(() => {
+    announceChromeMenu("category-nav", open);
+  }, [open]);
 
   useEffect(() => {
     if (!open) return;
@@ -79,14 +94,26 @@ export function StickyCategoryNav({
     };
 
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setOpen(false);
+      if (event.key === "Escape") {
+        event.preventDefault();
+        setOpen(false);
+        toggleRef.current?.focus();
+      }
+    };
+
+    const openScrollY = window.scrollY;
+    const onScroll = () => {
+      if (Math.abs(window.scrollY - openScrollY) < 10) return;
+      setOpen(false);
     };
 
     document.addEventListener("mousedown", onPointerDown);
     document.addEventListener("keydown", onKeyDown);
+    window.addEventListener("scroll", onScroll, { passive: true });
     return () => {
       document.removeEventListener("mousedown", onPointerDown);
       document.removeEventListener("keydown", onKeyDown);
+      window.removeEventListener("scroll", onScroll);
     };
   }, [open]);
 
@@ -123,18 +150,38 @@ export function StickyCategoryNav({
   }, [selectable]);
 
   useEffect(() => {
-    const hash = decodeURIComponent(window.location.hash.replace(/^#/, ""));
-    if (!hash) return;
+    const resolveHashTarget = (rawHash: string): HTMLElement | null => {
+      const hash = decodeURIComponent(rawHash.replace(/^#/, ""));
+      if (!hash) return null;
 
-    const match = selectable.find(
-      (item) => item.id === hash || item.sectionId === hash,
-    );
-    const target = document.getElementById(match?.sectionId ?? hash);
-    if (!target) return;
+      const match = selectable.find(
+        (item) => item.id === hash || item.sectionId === hash,
+      );
+      return document.getElementById(match?.sectionId ?? hash);
+    };
 
-    window.requestAnimationFrame(() => {
+    const scrollHash = (rawHash = window.location.hash) => {
+      const target = resolveHashTarget(rawHash);
+      if (!target) return;
       scrollToTarget(target);
+    };
+
+    // Cold open with #product-… — wait two frames so sticky cover is laid out.
+    let cancelled = false;
+    window.requestAnimationFrame(() => {
+      window.requestAnimationFrame(() => {
+        if (!cancelled) scrollHash();
+      });
     });
+
+    const onHashChange = () => {
+      scrollHash();
+    };
+    window.addEventListener("hashchange", onHashChange);
+    return () => {
+      cancelled = true;
+      window.removeEventListener("hashchange", onHashChange);
+    };
   }, [selectable]);
 
   const onSelect = (item: Extract<CategoryNavEntry, { kind: "subcategory" | "sale" }>) => {
@@ -158,6 +205,7 @@ export function StickyCategoryNav({
 
         <div className="category-sticky-right">
           <button
+            ref={toggleRef}
             type="button"
             className="category-sticky-trigger"
             aria-expanded={open}
@@ -206,7 +254,12 @@ export function StickyCategoryNav({
 
                 const selected = entry.id === activeId;
                 return (
-                  <li key={entry.id} role="option" aria-selected={selected}>
+                  <li
+                    key={entry.id}
+                    className="category-sticky-item"
+                    role="option"
+                    aria-selected={selected}
+                  >
                     <button
                       type="button"
                       className={

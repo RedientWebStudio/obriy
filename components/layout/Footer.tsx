@@ -1,5 +1,6 @@
 import { getTranslations } from "next-intl/server";
 import { Container } from "@/components/layout/Container";
+import { formatScheduleText } from "@/lib/format-schedule";
 import { externalLinkProps, siteLinks } from "@/lib/site-links";
 
 const messengers = [
@@ -27,7 +28,7 @@ export async function Footer({ variant = "full" }: Props) {
             <a href={`tel:${t("phoneTel")}`} className="footer-phone">
               {t("phone")}
             </a>
-            <p className="footer-schedule">{t("schedule")}</p>
+            <p className="footer-schedule">{formatScheduleText(t("schedule"))}</p>
             <ul className="footer-socials">
               {messengers.map((item) => {
                 const href = siteLinks.social[item.key];

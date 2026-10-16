@@ -1,3 +1,4 @@
+import { formatScheduleText } from "@/lib/format-schedule";
 import { externalLinkProps, siteLinks } from "@/lib/site-links";
 
 type Props = {
@@ -47,7 +48,9 @@ export function ContactInfo({ labels, values, socialLabels }: Props) {
 
       <div className="contacts-info-item">
         <p className="contacts-info-label">{labels.schedule}</p>
-        <p className="contacts-info-value">{values.schedule}</p>
+        <p className="contacts-info-value">
+          {formatScheduleText(values.schedule)}
+        </p>
       </div>
 
       <div className="contacts-info-divider" aria-hidden="true" />

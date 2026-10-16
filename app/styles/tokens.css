@@ -1,6 +1,7 @@
 /*
   OBRIY design tokens — values measured from Figma «P2 — OBRIY»
-  Frames: Homepage Desktop 1440 / Tablet 834 / Mobile 390
+  Ranges: Mobile 0–767 / Tablet 768–1023 / Desktop ≥1024
+  Figma refs: Desktop 1440 · Tablet 834 · Mobile 390
 */
 
 :root {
@@ -31,14 +32,19 @@
   --size-accent-width: 60px;
   --size-accent-height: 2px;
 
-  /* Header heights */
+  /* Header / sticky chrome */
   --header-height: 72px;
+  /* Live offset while Tablet Category header may slide away */
+  --header-offset: var(--header-height);
+  --sticky-nav-height: 3.25rem; /* 52px */
 
   /* Layout — mobile-first (Mobile frame) */
   --page-inline: 20px;
   --page-max: 1440px;
   /* Desktop content band: 1440 − 72 × 2 */
   --content-max: 1296px;
+  /* Tablet shell — Figma frame 834 (pad 32 → content 770) */
+  --layout-max-tablet: 52.125rem; /* 834px */
 
   /* Type scale — Mobile (and Tablet where identical) */
   --text-logo: 1.75rem; /* 28px */
@@ -65,13 +71,16 @@
   --grid-gap-advantages: 1.5rem;
 }
 
-/* Tablet frame 834 — pad 32; type mostly matches mobile; logo 38 */
-@media (min-width: 834px) {
+/* Tablet band from 768 — pad 32; compact chrome vs Desktop.
+   Figma frame ref 834 (32 + 770 + 32); Desktop tokens restore at 1024. */
+@media (min-width: 768px) {
   :root {
     --page-inline: 32px;
-    --header-height: 72px;
-    --text-logo: 2.375rem; /* 38px */
-    --grid-gap-advantages: 4.125rem; /* 66px: 450 − 64 − 320 */
+    --header-height: 64px;
+    --header-offset: 64px;
+    --sticky-nav-height: 3.5rem; /* 56px */
+    --text-logo: 1.625rem; /* 26px */
+    --grid-gap-advantages: 4.125rem; /* 66px @834: 450 − 64 − 320 */
   }
 }
 
@@ -85,6 +94,8 @@
     --page-inline: 72px;
     /* Desktop chrome: 80 → 72 (~−10%), keep vertical centering */
     --header-height: 72px;
+    --header-offset: 72px;
+    --sticky-nav-height: 3.25rem; /* 52px */
     --text-logo: 2.0625rem; /* 33px (was 35) */
     --hero-height-max: 40.5rem; /* 648px ≈ 90% of Figma 720 */
     --text-nav: 1.1875rem; /* 19px */

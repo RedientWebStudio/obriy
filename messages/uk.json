@@ -8,7 +8,10 @@
     "catalog": "Каталог",
     "contacts": "Контакти",
     "localeUk": "UA",
-    "localeEn": "EN"
+    "localeEn": "EN",
+    "switchToLocale": "Перемкнути мову на {locale}",
+    "openMenu": "Відкрити меню",
+    "closeMenu": "Закрити меню"
   },
   "Footer": {
     "phone": "+380 96 742 21 84",

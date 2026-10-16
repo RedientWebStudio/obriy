@@ -25,7 +25,7 @@ export async function AboutAdvantages() {
         <div className="advantages-block">
           <AccentBar className="mx-auto" />
           <h2 className="advantages-heading">{t("advantages.heading")}</h2>
-          <div className="grid-features advantages-grid">
+          <div className="advantages-grid">
             {ADVANTAGE_KEYS.map((key) => (
               <AdvantageCard
                 key={key}

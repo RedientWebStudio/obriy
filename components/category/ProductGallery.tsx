@@ -1,7 +1,13 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useId, useRef, useState } from "react";
+import {
+  useEffect,
+  useId,
+  useRef,
+  useState,
+  type PointerEvent as ReactPointerEvent,
+} from "react";
 import type { CategoryImage } from "@/lib/category-types";
 import { pickLocale } from "@/lib/locale";
 
@@ -22,6 +28,8 @@ type Props = {
   productTitle: string;
 };
 
+const SWIPE_THRESHOLD_PX = 48;
+
 export function ProductGallery({
   images,
   placeholderCount = 1,
@@ -35,6 +43,12 @@ export function ProductGallery({
   const openButtonRef = useRef<HTMLButtonElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const wasOpenRef = useRef(false);
+  const swipeRef = useRef<{
+    pointerId: number;
+    x: number;
+    y: number;
+    active: boolean;
+  } | null>(null);
   const titleId = useId();
   const hasRealImages = images.length > 0;
   const safeIndex = count > 0 ? ((index % count) + count) % count : 0;
@@ -57,26 +71,73 @@ export function ProductGallery({
     if (!lightboxOpen) return;
 
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setLightboxOpen(false);
+      if (event.key === "Escape") {
+        event.preventDefault();
+        setLightboxOpen(false);
+      }
       if (event.key === "ArrowLeft") {
+        event.preventDefault();
         setIndex((currentIndex) => (currentIndex - 1 + count) % count);
       }
       if (event.key === "ArrowRight") {
+        event.preventDefault();
         setIndex((currentIndex) => (currentIndex + 1) % count);
       }
     };
 
-    const previousOverflow = document.body.style.overflow;
+    const html = document.documentElement;
+    const previousBodyOverflow = document.body.style.overflow;
+    const previousHtmlOverflow = html.style.overflow;
     document.body.style.overflow = "hidden";
+    html.style.overflow = "hidden";
+
     document.addEventListener("keydown", onKeyDown);
     return () => {
-      document.body.style.overflow = previousOverflow;
+      document.body.style.overflow = previousBodyOverflow;
+      html.style.overflow = previousHtmlOverflow;
       document.removeEventListener("keydown", onKeyDown);
     };
   }, [lightboxOpen, count]);
 
   const go = (delta: number) => {
+    if (count <= 1) return;
     setIndex((currentIndex) => (currentIndex + delta + count) % count);
+  };
+
+  const onStagePointerDown = (event: ReactPointerEvent<HTMLDivElement>) => {
+    if (event.button !== 0 && event.pointerType === "mouse") return;
+    if ((event.target as HTMLElement).closest(".product-lightbox-nav")) return;
+
+    swipeRef.current = {
+      pointerId: event.pointerId,
+      x: event.clientX,
+      y: event.clientY,
+      active: true,
+    };
+    event.currentTarget.setPointerCapture(event.pointerId);
+  };
+
+  const endSwipe = (event: ReactPointerEvent<HTMLDivElement>) => {
+    const start = swipeRef.current;
+    swipeRef.current = null;
+    if (!start?.active || start.pointerId !== event.pointerId) return;
+
+    try {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    } catch {
+      /* already released */
+    }
+
+    const dx = event.clientX - start.x;
+    const dy = event.clientY - start.y;
+    if (Math.abs(dx) < SWIPE_THRESHOLD_PX) return;
+    if (Math.abs(dx) <= Math.abs(dy)) return;
+
+    go(dx < 0 ? 1 : -1);
+  };
+
+  const cancelSwipe = () => {
+    swipeRef.current = null;
   };
 
   return (
@@ -151,11 +212,16 @@ export function ProductGallery({
           aria-modal="true"
           aria-labelledby={titleId}
         >
-          <div
+          <button
+            type="button"
             className="product-lightbox-backdrop"
+            aria-label={labels.lightboxClose}
             onClick={() => setLightboxOpen(false)}
           />
-          <div className="product-lightbox-panel">
+          <div
+            className="product-lightbox-panel"
+            onClick={(event) => event.stopPropagation()}
+          >
             <div className="product-lightbox-header">
               <p id={titleId} className="product-lightbox-title">
                 {productTitle}
@@ -184,42 +250,68 @@ export function ProductGallery({
               </button>
             </div>
 
-            <div className="product-lightbox-stage">
-              {hasRealImages && current ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={current.src}
-                  alt={pickLocale(current.alt, locale) || productTitle}
-                  className="product-lightbox-image"
-                />
-              ) : (
-                <div className="product-lightbox-placeholder">
-                  {labels.photoPlaceholder}
-                </div>
-              )}
+            <div
+              className={
+                count > 1
+                  ? "product-lightbox-viewer has-nav"
+                  : "product-lightbox-viewer"
+              }
+            >
+              {count > 1 ? (
+                <button
+                  type="button"
+                  className="product-lightbox-nav product-lightbox-nav--prev"
+                  aria-label={labels.galleryPrev}
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    go(-1);
+                  }}
+                >
+                  <span aria-hidden="true">←</span>
+                </button>
+              ) : null}
+
+              <div
+                className="product-lightbox-stage"
+                onPointerDown={onStagePointerDown}
+                onPointerUp={endSwipe}
+                onPointerCancel={cancelSwipe}
+              >
+                {hasRealImages && current ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={current.src}
+                    alt={pickLocale(current.alt, locale) || productTitle}
+                    className="product-lightbox-image"
+                    draggable={false}
+                  />
+                ) : (
+                  <div className="product-lightbox-placeholder">
+                    {labels.photoPlaceholder}
+                  </div>
+                )}
+              </div>
+
+              {count > 1 ? (
+                <button
+                  type="button"
+                  className="product-lightbox-nav product-lightbox-nav--next"
+                  aria-label={labels.galleryNext}
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    go(1);
+                  }}
+                >
+                  <span aria-hidden="true">→</span>
+                </button>
+              ) : null}
             </div>
 
             {count > 1 ? (
               <div className="product-lightbox-controls">
-                <button
-                  type="button"
-                  className="product-card-gallery-btn"
-                  aria-label={labels.galleryPrev}
-                  onClick={() => go(-1)}
-                >
-                  ←
-                </button>
                 <span>
                   {safeIndex + 1} / {count}
                 </span>
-                <button
-                  type="button"
-                  className="product-card-gallery-btn"
-                  aria-label={labels.galleryNext}
-                  onClick={() => go(1)}
-                >
-                  →
-                </button>
               </div>
             ) : null}
           </div>

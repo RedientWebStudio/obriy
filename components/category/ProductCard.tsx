@@ -53,6 +53,44 @@ async function copyShareUrl(url: string): Promise<boolean> {
   }
 }
 
+/**
+ * Prefer the OS share sheet on phone/tablet-like devices when the API
+ * is available. Desktop always copies — even if navigator.share exists
+ * (Chromium desktop). Detection uses capabilities, not viewport width.
+ */
+function shouldUseNativeShare(payload: ShareData): boolean {
+  if (!window.isSecureContext) return false;
+  if (typeof navigator.share !== "function") return false;
+
+  try {
+    if (
+      typeof navigator.canShare === "function" &&
+      !navigator.canShare(payload)
+    ) {
+      return false;
+    }
+  } catch {
+    return false;
+  }
+
+  const uaData = (
+    navigator as Navigator & { userAgentData?: { mobile?: boolean } }
+  ).userAgentData;
+  if (typeof uaData?.mobile === "boolean") {
+    return uaData.mobile;
+  }
+
+  if (window.matchMedia("(hover: hover) and (pointer: fine)").matches) {
+    return false;
+  }
+
+  return (
+    window.matchMedia("(pointer: coarse)").matches ||
+    navigator.maxTouchPoints > 0 ||
+    "ontouchstart" in window
+  );
+}
+
 export function ProductCard({
   product,
   categorySlug,
@@ -64,7 +102,10 @@ export function ProductCard({
   const [specsOpen, setSpecsOpen] = useState(false);
   const [descExpanded, setDescExpanded] = useState(false);
   const [shareNote, setShareNote] = useState<string | null>(null);
+  const [shareNoteVisible, setShareNoteVisible] = useState(false);
   const sizeRootRef = useRef<HTMLDivElement>(null);
+  const shareHideTimerRef = useRef<number | null>(null);
+  const shareClearTimerRef = useRef<number | null>(null);
   const sizeListId = useId();
   const specsId = useId();
 
@@ -108,35 +149,59 @@ export function ProductCard({
     };
   }, [sizeOpen]);
 
-  const shareProduct = async () => {
-    const url = `${window.location.origin}${window.location.pathname}${window.location.search}#${anchorId}`;
-    const payload = { title, url };
-    let canShare = false;
-    try {
-      canShare =
-        typeof navigator.share === "function" &&
-        (typeof navigator.canShare !== "function" ||
-          navigator.canShare(payload));
-    } catch {
-      canShare = false;
+  useEffect(() => {
+    return () => {
+      if (shareHideTimerRef.current !== null) {
+        window.clearTimeout(shareHideTimerRef.current);
+      }
+      if (shareClearTimerRef.current !== null) {
+        window.clearTimeout(shareClearTimerRef.current);
+      }
+    };
+  }, []);
+
+  const showCopiedNote = () => {
+    if (shareHideTimerRef.current !== null) {
+      window.clearTimeout(shareHideTimerRef.current);
+    }
+    if (shareClearTimerRef.current !== null) {
+      window.clearTimeout(shareClearTimerRef.current);
     }
 
-    if (canShare) {
+    setShareNote(labels.shareCopied);
+    setShareNoteVisible(true);
+
+    shareHideTimerRef.current = window.setTimeout(() => {
+      setShareNoteVisible(false);
+      shareClearTimerRef.current = window.setTimeout(() => {
+        setShareNote(null);
+        shareClearTimerRef.current = null;
+      }, 200);
+      shareHideTimerRef.current = null;
+    }, 2000);
+  };
+
+  const shareProduct = async () => {
+    const url = `${window.location.origin}${window.location.pathname}${window.location.search}#${anchorId}`;
+    const payload: ShareData = { title, url };
+
+    if (shouldUseNativeShare(payload)) {
       try {
         await navigator.share(payload);
         return;
       } catch (error) {
+        // User dismissed the sheet — no error toast, no "copied" note.
         if (error instanceof DOMException && error.name === "AbortError") {
           return;
         }
+        // Share failed for another reason — fall through to clipboard.
       }
     }
 
     const copied = await copyShareUrl(url);
     if (!copied) return;
 
-    setShareNote(labels.shareCopied);
-    window.setTimeout(() => setShareNote(null), 2000);
+    showCopiedNote();
   };
 
   return (
@@ -160,23 +225,53 @@ export function ProductCard({
       <div className="product-card-info">
         <div className="product-card-title-row">
           <h3 className="product-card-title">{title}</h3>
-          <button
-            type="button"
-            className="product-card-share"
-            aria-label={labels.share}
-            onClick={() => {
-              void shareProduct();
-            }}
-          >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/icons/share.svg" alt="" width={28} height={28} />
-          </button>
+          <div className="product-card-share-wrap">
+            <button
+              type="button"
+              className="product-card-share"
+              aria-label={labels.share}
+              onClick={() => {
+                void shareProduct();
+              }}
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/icons/share.svg" alt="" width={28} height={28} />
+            </button>
+            <p
+              className={
+                shareNoteVisible
+                  ? "product-card-share-note is-visible"
+                  : "product-card-share-note"
+              }
+              role="status"
+              aria-live="polite"
+              aria-atomic="true"
+            >
+              {shareNote ? (
+                <>
+                  <span className="product-card-share-check" aria-hidden="true">
+                    <svg
+                      width="12"
+                      height="12"
+                      viewBox="0 0 12 12"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M2 6.2L4.8 9L10 3"
+                        stroke="currentColor"
+                        strokeWidth="1.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  </span>
+                  <span>{shareNote}</span>
+                </>
+              ) : null}
+            </p>
+          </div>
         </div>
-        {shareNote ? (
-          <p className="product-card-share-note" role="status">
-            {shareNote}
-          </p>
-        ) : null}
 
         {variant ? (
           <div className="product-card-meta">
