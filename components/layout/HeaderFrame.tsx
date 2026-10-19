@@ -2,12 +2,12 @@
 
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Container } from "@/components/layout/Container";
+import { MQ_TABLET_MIN } from "@/lib/breakpoints";
 
 type Props = {
   children: ReactNode;
 };
 
-const CATEGORY_HIDE_MQ = "(min-width: 768px)";
 const SCROLL_THRESHOLD = 10;
 
 /**
@@ -25,7 +25,7 @@ export function HeaderFrame({ children }: Props) {
   }, [hidden]);
 
   useEffect(() => {
-    const mq = window.matchMedia(CATEGORY_HIDE_MQ);
+    const mq = window.matchMedia(MQ_TABLET_MIN);
 
     const canHideCategoryChrome = () =>
       mq.matches && Boolean(document.querySelector(".category-sticky-nav"));

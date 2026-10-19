@@ -43,7 +43,7 @@
   --page-max: 1440px;
   /* Desktop content band: 1440 − 72 × 2 */
   --content-max: 1296px;
-  /* Tablet shell — Figma frame 834 (pad 32 → content 770) */
+  /* Figma Tablet frame width (reference only — shell is fluid 768–1023) */
   --layout-max-tablet: 52.125rem; /* 834px */
 
   /* Type scale — Mobile (and Tablet where identical) */

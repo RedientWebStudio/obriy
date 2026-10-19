@@ -3,6 +3,7 @@
 import { useEffect, useId, useRef, useState } from "react";
 import { Link, usePathname } from "@/i18n/navigation";
 import type { NavItem } from "@/components/layout/NavLinks";
+import { MQ_DESKTOP_MIN } from "@/lib/breakpoints";
 import {
   announceChromeMenu,
   onForeignChromeMenuOpen,
@@ -43,7 +44,7 @@ export function HeaderBurgerMenu({
   }
 
   useEffect(() => {
-    const mq = window.matchMedia("(min-width: 1024px)");
+    const mq = window.matchMedia(MQ_DESKTOP_MIN);
     const onChange = () => {
       if (mq.matches) setOpen(false);
     };

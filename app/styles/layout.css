@@ -26,18 +26,10 @@
 }
 
 /*
-  Tablet shell (≥768): cap content to Figma 834.
-  Desktop (≥1024) restores page/content max — cascade override, no
-  max-width:1023 ceiling (avoids a one-pixel “third” composition).
-  Hero image stays full-bleed; .hero-content max is set with .hero-content.
+  Tablet (≥768): fluid shell — full viewport width with --page-inline.
+  Do NOT cap to Figma 834: that froze a third “island” composition
+  between 834–1023. Desktop (≥1024) keeps page/content max.
 */
-@media (min-width: 768px) {
-  .container,
-  .container-narrow {
-    max-width: var(--layout-max-tablet);
-  }
-}
-
 @media (min-width: 1024px) {
   .container {
     max-width: var(--page-max);
@@ -644,13 +636,7 @@ body:has(.site-header.is-header-hidden) .category-sticky-nav {
   pointer-events: none;
 }
 
-/* After base max — tablet shell aligns copy with Header .container */
-@media (min-width: 768px) {
-  .hero-content {
-    max-width: var(--layout-max-tablet);
-  }
-}
-
+/* Hero copy tracks fluid shell; Desktop keeps page max (base already page-max). */
 @media (min-width: 1024px) {
   .hero-content {
     max-width: var(--page-max);
@@ -1249,9 +1235,21 @@ a.footer-credit-name:focus-visible {
     transform: none;
   }
 
-  /* Keep vertical centering; only background transitions are disabled above */
+  /* Preserve positioning transforms when motion is reduced */
   .category-floating-cta:hover {
     transform: translateY(-50%);
+  }
+
+  @media (min-width: 768px) {
+    .category-floating-cta:hover {
+      transform: none;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .category-floating-cta:hover {
+      transform: translateY(-50%);
+    }
   }
 }
 
@@ -1935,14 +1933,10 @@ a.footer-credit-name:focus-visible {
 
 /*
   Tablet Category (≥768): one content column + vertical Product Card.
-  Sticky nav / H2 / gallery / info share the 834 shell left edge.
+  Sticky / page use the fluid shell; Product column centered at 590.
   Gallery is NOT independently centered. Desktop restored at ≥1024.
 */
 @media (min-width: 768px) {
-  .category-sticky-nav-inner {
-    max-width: var(--layout-max-tablet);
-  }
-
   /* Left category + right subcategory — same type weight on Tablet */
   .category-sticky-category-label,
   .category-sticky-trigger {
@@ -1954,8 +1948,9 @@ a.footer-credit-name:focus-visible {
   }
 
   .category-section-heading {
-    font-size: 1.8125rem; /* 29px */
-    line-height: 1.15;
+    /* Align with Catalog / Contacts / Home section titles (--text-section) */
+    font-size: var(--text-section); /* 30px Tablet */
+    line-height: var(--text-section-leading);
     font-weight: 500;
   }
 
@@ -1967,27 +1962,36 @@ a.footer-credit-name:focus-visible {
     gap: 3.25rem;
   }
 
-  /* Clear fixed vertical CTA without breaking the left grid edge */
+  /* Bottom-right horizontal CTA — no extra end gutter for vertical tab */
   .category-page > .container {
-    padding-inline-end: calc(var(--page-inline) + 3.5rem);
+    padding-inline-end: var(--page-inline);
+  }
+
+  /*
+    Center the product column in the Tablet shell (esp. 1008–1023) while
+    keeping text start-aligned inside the block. One max-width for H2 + cards.
+  */
+  .category-section-header,
+  .category-product-list .product-card {
+    width: 100%;
+    max-width: min(36.875rem, 100%); /* 590 — media measure */
+    margin-inline: auto;
   }
 
   .product-card {
     grid-template-columns: minmax(0, 1fr);
     column-gap: 0;
     row-gap: 1rem;
-    width: 100%;
-    max-width: 38.75rem; /* 620 — shared card column */
   }
 
   .product-card-gallery {
     width: 100%;
-    max-width: 36.875rem; /* 590 — media frame */
-    margin-inline: 0; /* left-align with info / H2 / sticky */
+    max-width: none;
+    margin-inline: 0;
   }
 
   .product-card-info {
-    max-width: 38.75rem; /* 620 */
+    max-width: none;
     width: 100%;
   }
 
@@ -2069,6 +2073,13 @@ a.footer-credit-name:focus-visible {
   .category-section-heading {
     font-size: var(--text-section);
     line-height: var(--text-section-leading);
+  }
+
+  .category-section-header,
+  .category-product-list .product-card {
+    max-width: none;
+    width: auto;
+    margin-inline: 0;
   }
 
   .category-section-header {
@@ -2202,9 +2213,11 @@ a.footer-credit-name:focus-visible {
   color: var(--brand);
 }
 
-/* Vertical contact tab — right edge (project doc).
-   Declared after tablet/desktop product blocks so width tokens here win
-   the cascade; desktop bumps width below. */
+/*
+  Floating CTA — Mobile default: vertical right-edge tab.
+  Tablet (768–1023): horizontal pill, bottom-right (Figma Mobile CTA 212:5).
+  Desktop (≥1024): vertical tab restored.
+*/
 .category-floating-cta {
   position: fixed;
   top: 50%;
@@ -2230,26 +2243,8 @@ a.footer-credit-name:focus-visible {
   transition: background-color 160ms ease;
 }
 
-/* Tablet / below Desktop — keep lighten hover */
 .category-floating-cta:hover {
   background: color-mix(in srgb, var(--surface-inverse) 88%, white);
-}
-
-@media (min-width: 1024px) {
-  .category-floating-cta {
-    width: 3.25rem;
-    padding: 1.25rem 0.7rem;
-    font-size: 1rem;
-    gap: 0.75rem;
-    transform-origin: center right;
-    /* Match Hero primary CTA motion (scale 1.02 / 160ms ease) */
-    transition: transform 160ms ease;
-  }
-
-  .category-floating-cta:hover {
-    background: var(--surface-inverse);
-    transform: translateY(-50%) scale(1.02);
-  }
 }
 
 /* Stack locale strings so outer size follows the longest label. */
@@ -2288,6 +2283,113 @@ a.footer-credit-name:focus-visible {
   height: 8px;
   flex-shrink: 0;
   transform: rotate(-90deg);
+}
+
+/*
+  Tablet (≥768): horizontal control (Hero/primary radius), bottom-right.
+  Desktop (≥1024) restores the vertical tab — cascade, no max-width:1023.
+*/
+@media (min-width: 768px) {
+  .category-page {
+    padding-bottom: 7.5rem; /* clearance for bottom CTA */
+  }
+
+  .category-floating-cta {
+    top: auto;
+    bottom: max(2rem, env(safe-area-inset-bottom, 0px)); /* 32px */
+    right: max(1.5rem, env(safe-area-inset-right, 0px)); /* 24px */
+    left: auto;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    width: auto;
+    min-height: 0;
+    padding: 0.625rem 1rem; /* 10 × 16 — compact vs Hero primary */
+    border-radius: var(--radius-control); /* same as Hero CTA */
+    font-size: 0.875rem; /* 14px */
+    font-weight: 500;
+    line-height: 1.25rem; /* 20px */
+    transform: none;
+    transform-origin: center center;
+    transition:
+      transform 160ms ease,
+      background-color 160ms ease,
+      opacity 220ms ease,
+      visibility 220ms ease;
+  }
+
+  .category-floating-cta:hover {
+    background: var(--surface-inverse);
+    transform: scale(1.02);
+  }
+
+  /* Fade out while Footer occupies the CTA band (class set only on Tablet). */
+  .category-floating-cta.is-obscured-by-footer {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+  }
+
+  .category-floating-cta-label {
+    writing-mode: horizontal-tb;
+    text-orientation: mixed;
+    transform: none;
+  }
+
+  .category-floating-cta-arrow {
+    transform: none;
+  }
+}
+
+@media (min-width: 1024px) {
+  .category-page {
+    padding-bottom: 6.5rem;
+  }
+
+  .category-floating-cta {
+    top: 50%;
+    bottom: auto;
+    right: 0;
+    left: auto;
+    flex-direction: column;
+    gap: 0.75rem;
+    width: 3.25rem;
+    min-height: 0;
+    padding: 1.25rem 0.7rem;
+    border-radius: 0.5rem 0 0 0.5rem;
+    font-size: 1rem;
+    transform: translateY(-50%);
+    transform-origin: center right;
+    transition: transform 160ms ease;
+  }
+
+  /*
+    If the obscure class lingers across a Tablet→Desktop resize, restore
+    the vertical centering transform (do not leave Tablet transform:none).
+  */
+  .category-floating-cta.is-obscured-by-footer {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transform: translateY(-50%);
+  }
+
+  .category-floating-cta:hover,
+  .category-floating-cta.is-obscured-by-footer:hover {
+    background: var(--surface-inverse);
+    transform: translateY(-50%) scale(1.02);
+  }
+
+  .category-floating-cta-label {
+    writing-mode: vertical-rl;
+    text-orientation: sideways;
+    transform: rotate(180deg);
+  }
+
+  .category-floating-cta-arrow {
+    transform: rotate(-90deg);
+  }
 }
 
 .product-lightbox {
@@ -2661,7 +2763,7 @@ a.contacts-info-value:focus-visible {
   font-family: var(--font-family-sans);
   font-size: var(--text-section);
   font-weight: 500;
-  line-height: 1.3;
+  line-height: var(--text-section-leading);
   color: var(--ink);
 }
 
@@ -2768,8 +2870,18 @@ a.contacts-info-value:focus-visible {
   width: 100%;
   height: 100%;
   z-index: 0;
-  /* One-finger vertical gestures scroll the page; map pan uses two fingers */
+}
+
+/*
+  Beat Leaflet .leaflet-touch-zoom { touch-action: pan-x pan-y } so one finger
+  scrolls the page; two-finger pan toggles .stores-map--two-finger in JS.
+*/
+.stores-map .stores-map-canvas.leaflet-container {
   touch-action: pan-y;
+}
+
+.stores-map .stores-map-canvas.leaflet-container.stores-map--two-finger {
+  touch-action: none;
 }
 
 /* Leaflet zoom — clear of map edges; no decorative overlay label */

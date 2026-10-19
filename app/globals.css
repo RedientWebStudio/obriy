@@ -22,7 +22,12 @@
   --font-sans: var(--font-onest), ui-sans-serif, system-ui, sans-serif;
   --font-brand: var(--font-libre-baskerville), ui-serif, Georgia, serif;
 
-  /* Breakpoints: Mobile <768 · Tablet ≥768 · Desktop ≥1024 (Figma tablet ref 834) */
+  /*
+    Breakpoints: Mobile <768 · Tablet ≥768 · Desktop ≥1024 (Figma tablet ref 834).
+    Tailwind v4 `max-*` variants resolve to (breakpoint − 1px), e.g. max-desktop
+    → max-width: 1023px. Layout/JS must use min-width cascade only (768 / 1024)
+    so 1023px never becomes a third band that disagrees with Desktop rules.
+  */
   --breakpoint-tablet: 768px;
   --breakpoint-desktop: 1024px;
 
