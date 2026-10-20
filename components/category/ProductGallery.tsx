@@ -7,8 +7,10 @@ import {
   useRef,
   useState,
   type PointerEvent as ReactPointerEvent,
+  type ReactNode,
 } from "react";
 import type { CategoryImage } from "@/lib/category-types";
+import { MQ_DESKTOP_MIN } from "@/lib/breakpoints";
 import { pickLocale } from "@/lib/locale";
 
 type Labels = {
@@ -40,6 +42,7 @@ export function ProductGallery({
   const count = images.length > 0 ? images.length : Math.max(1, placeholderCount);
   const [index, setIndex] = useState(0);
   const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [isDesktop, setIsDesktop] = useState(false);
   const openButtonRef = useRef<HTMLButtonElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const wasOpenRef = useRef(false);
@@ -53,6 +56,19 @@ export function ProductGallery({
   const hasRealImages = images.length > 0;
   const safeIndex = count > 0 ? ((index % count) + count) % count : 0;
   const current = images[safeIndex];
+  const multi = count > 1;
+
+  useEffect(() => {
+    const mq = window.matchMedia(MQ_DESKTOP_MIN);
+    const sync = () => {
+      const desktop = mq.matches;
+      setIsDesktop(desktop);
+      if (!desktop) setLightboxOpen(false);
+    };
+    sync();
+    mq.addEventListener("change", sync);
+    return () => mq.removeEventListener("change", sync);
+  }, []);
 
   useEffect(() => {
     if (lightboxOpen) {
@@ -104,9 +120,12 @@ export function ProductGallery({
     setIndex((currentIndex) => (currentIndex + delta + count) % count);
   };
 
-  const onStagePointerDown = (event: ReactPointerEvent<HTMLDivElement>) => {
+  const onStagePointerDown = (event: ReactPointerEvent<HTMLElement>) => {
     if (event.button !== 0 && event.pointerType === "mouse") return;
     if ((event.target as HTMLElement).closest(".product-lightbox-nav")) return;
+    if ((event.target as HTMLElement).closest(".product-card-gallery-btn")) {
+      return;
+    }
 
     swipeRef.current = {
       pointerId: event.pointerId,
@@ -117,7 +136,7 @@ export function ProductGallery({
     event.currentTarget.setPointerCapture(event.pointerId);
   };
 
-  const endSwipe = (event: ReactPointerEvent<HTMLDivElement>) => {
+  const endSwipe = (event: ReactPointerEvent<HTMLElement>) => {
     const start = swipeRef.current;
     swipeRef.current = null;
     if (!start?.active || start.pointerId !== event.pointerId) return;
@@ -140,46 +159,66 @@ export function ProductGallery({
     swipeRef.current = null;
   };
 
+  const mediaClassName = hasRealImages
+    ? "product-card-media-button has-image"
+    : "product-card-media-button";
+
+  const mediaVisual: ReactNode =
+    hasRealImages && current ? (
+      <Image
+        src={current.src}
+        alt={pickLocale(current.alt, locale) || productTitle}
+        fill
+        sizes="(min-width: 1024px) 590px, (min-width: 768px) 590px, 100vw"
+        className="product-card-media-image"
+        loading="lazy"
+        draggable={false}
+      />
+    ) : (
+      <div
+        className="product-card-media"
+        style={{
+          backgroundColor:
+            safeIndex % 2 === 0
+              ? "var(--product-placeholder-a)"
+              : "var(--product-placeholder-b)",
+        }}
+      >
+        <span className="product-card-media-label">
+          {labels.photoPlaceholder}
+        </span>
+      </div>
+    );
+
+  /** Card swipes only below Desktop — Desktop uses Lightbox for swipe. */
+  const cardSwipeProps =
+    multi && !isDesktop
+      ? {
+          onPointerDown: onStagePointerDown,
+          onPointerUp: endSwipe,
+          onPointerCancel: cancelSwipe,
+        }
+      : undefined;
+
   return (
     <div className="product-card-gallery">
-      <button
-        ref={openButtonRef}
-        type="button"
-        className={
-          hasRealImages
-            ? "product-card-media-button has-image"
-            : "product-card-media-button"
-        }
-        onClick={() => setLightboxOpen(true)}
-        aria-label={labels.lightboxLabel}
-      >
-        {hasRealImages && current ? (
-          <Image
-            src={current.src}
-            alt={pickLocale(current.alt, locale) || productTitle}
-            fill
-            sizes="(min-width: 1024px) 590px, 48vw"
-            className="product-card-media-image"
-            loading="lazy"
-          />
-        ) : (
-          <div
-            className="product-card-media"
-            style={{
-              backgroundColor:
-                safeIndex % 2 === 0
-                  ? "var(--product-placeholder-a)"
-                  : "var(--product-placeholder-b)",
-            }}
-          >
-            <span className="product-card-media-label">
-              {labels.photoPlaceholder}
-            </span>
-          </div>
-        )}
-      </button>
+      {isDesktop ? (
+        <button
+          ref={openButtonRef}
+          type="button"
+          className={mediaClassName}
+          onClick={() => setLightboxOpen(true)}
+          aria-label={labels.lightboxLabel}
+        >
+          {mediaVisual}
+        </button>
+      ) : (
+        <div className={mediaClassName} {...cardSwipeProps}>
+          {mediaVisual}
+        </div>
+      )}
 
-      {count > 1 ? (
+      {multi ? (
         <div className="product-card-gallery-controls">
           <button
             type="button"
@@ -205,7 +244,7 @@ export function ProductGallery({
         <p className="product-card-gallery-single">{labels.photoSingle}</p>
       )}
 
-      {lightboxOpen ? (
+      {isDesktop && lightboxOpen ? (
         <div
           className="product-lightbox"
           role="dialog"
@@ -252,12 +291,12 @@ export function ProductGallery({
 
             <div
               className={
-                count > 1
+                multi
                   ? "product-lightbox-viewer has-nav"
                   : "product-lightbox-viewer"
               }
             >
-              {count > 1 ? (
+              {multi ? (
                 <button
                   type="button"
                   className="product-lightbox-nav product-lightbox-nav--prev"
@@ -292,7 +331,7 @@ export function ProductGallery({
                 )}
               </div>
 
-              {count > 1 ? (
+              {multi ? (
                 <button
                   type="button"
                   className="product-lightbox-nav product-lightbox-nav--next"
@@ -307,7 +346,7 @@ export function ProductGallery({
               ) : null}
             </div>
 
-            {count > 1 ? (
+            {multi ? (
               <div className="product-lightbox-controls">
                 <span>
                   {safeIndex + 1} / {count}

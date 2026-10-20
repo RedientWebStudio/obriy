@@ -104,7 +104,8 @@ export function HeaderBurgerMenu({
       'button[aria-expanded], a[href], [tabindex]:not([tabindex="-1"])',
     );
     const firstLink = root.querySelector<HTMLElement>(".header-burger-link");
-    firstLink?.focus();
+    // preventScroll: focusing must not nudge the page and toggle Header.
+    firstLink?.focus({ preventScroll: true });
 
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key !== "Tab" || focusables.length === 0) return;

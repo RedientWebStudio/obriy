@@ -6,6 +6,7 @@ import type { CategoryProduct } from "@/lib/category-types";
 import { productAnchor } from "@/lib/assortment";
 import { discountPercent, formatPriceUah } from "@/lib/format-price";
 import { pickLocale } from "@/lib/locale";
+import { buildProductShareUrl } from "@/lib/product-share-url";
 
 export type ProductCardLabels = {
   size: string;
@@ -32,63 +33,73 @@ type Props = {
 };
 
 async function copyShareUrl(url: string): Promise<boolean> {
-  try {
-    await navigator.clipboard.writeText(url);
-    return true;
-  } catch {
+  if (window.isSecureContext && navigator.clipboard?.writeText) {
     try {
-      const field = document.createElement("textarea");
-      field.value = url;
-      field.setAttribute("readonly", "");
-      field.style.position = "fixed";
-      field.style.left = "-9999px";
-      document.body.appendChild(field);
-      field.select();
-      const copied = document.execCommand("copy");
-      field.remove();
-      return copied;
+      await navigator.clipboard.writeText(url);
+      return true;
     } catch {
-      return false;
+      /* fall through to execCommand */
     }
+  }
+
+  try {
+    const field = document.createElement("textarea");
+    field.value = url;
+    field.setAttribute("readonly", "");
+    field.setAttribute("aria-hidden", "true");
+    field.style.cssText = "position:fixed;top:0;left:0;width:1px;height:1px;padding:0;border:0;opacity:0;";
+    document.body.appendChild(field);
+    field.focus();
+    field.select();
+    field.setSelectionRange(0, url.length);
+    const copied = document.execCommand("copy");
+    field.remove();
+    return copied;
+  } catch {
+    return false;
   }
 }
 
 /**
- * Prefer the OS share sheet on phone/tablet-like devices when the API
- * is available. Desktop always copies — even if navigator.share exists
- * (Chromium desktop). Detection uses capabilities, not viewport width.
+ * Web Share sheet — for coarse / touch-first agents (phones, tablets).
+ * Fine-pointer desktops often expose `navigator.share` too (Chrome/Edge), but
+ * the OS sheet is a poor fit for “copy product link” and may share title text
+ * instead of the URL. Prefer clipboard there (input modality, not User-Agent).
  */
-function shouldUseNativeShare(payload: ShareData): boolean {
-  if (!window.isSecureContext) return false;
-  if (typeof navigator.share !== "function") return false;
-
-  try {
-    if (
-      typeof navigator.canShare === "function" &&
-      !navigator.canShare(payload)
-    ) {
-      return false;
-    }
-  } catch {
+function shouldOfferWebShare(): boolean {
+  if (!window.isSecureContext || typeof navigator.share !== "function") {
     return false;
   }
-
-  const uaData = (
-    navigator as Navigator & { userAgentData?: { mobile?: boolean } }
-  ).userAgentData;
-  if (typeof uaData?.mobile === "boolean") {
-    return uaData.mobile;
-  }
-
   if (window.matchMedia("(hover: hover) and (pointer: fine)").matches) {
     return false;
   }
+  return true;
+}
 
-  return (
-    window.matchMedia("(pointer: coarse)").matches ||
-    navigator.maxTouchPoints > 0 ||
-    "ontouchstart" in window
-  );
+/**
+ * Try the OS share sheet with URL-first payloads (never title-only text).
+ * AbortError = user cancelled (not a failure).
+ */
+async function tryWebShare(url: string, title: string): Promise<"shared" | "abort" | "fail"> {
+  if (!shouldOfferWebShare()) return "fail";
+
+  // URL-first: desktop/OS targets that mishandle `text` won't copy the title alone.
+  const attempts: ShareData[] = [{ url, title }, { url }];
+
+  for (const data of attempts) {
+    try {
+      if (typeof navigator.canShare === "function" && !navigator.canShare(data)) {
+        continue;
+      }
+      await navigator.share(data);
+      return "shared";
+    } catch (error) {
+      if (error instanceof DOMException && error.name === "AbortError") {
+        return "abort";
+      }
+    }
+  }
+  return "fail";
 }
 
 export function ProductCard({
@@ -103,7 +114,6 @@ export function ProductCard({
   const [descExpanded, setDescExpanded] = useState(false);
   const [shareNote, setShareNote] = useState<string | null>(null);
   const [shareNoteVisible, setShareNoteVisible] = useState(false);
-  const sizeRootRef = useRef<HTMLDivElement>(null);
   const shareHideTimerRef = useRef<number | null>(null);
   const shareClearTimerRef = useRef<number | null>(null);
   const sizeListId = useId();
@@ -127,27 +137,6 @@ export function ProductCard({
   const salePct = hasDiscount
     ? discountPercent(variant.price, compareAt)
     : 0;
-
-  useEffect(() => {
-    if (!sizeOpen) return;
-
-    const onPointerDown = (event: MouseEvent) => {
-      if (!sizeRootRef.current?.contains(event.target as Node)) {
-        setSizeOpen(false);
-      }
-    };
-
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setSizeOpen(false);
-    };
-
-    document.addEventListener("mousedown", onPointerDown);
-    document.addEventListener("keydown", onKeyDown);
-    return () => {
-      document.removeEventListener("mousedown", onPointerDown);
-      document.removeEventListener("keydown", onKeyDown);
-    };
-  }, [sizeOpen]);
 
   useEffect(() => {
     return () => {
@@ -182,25 +171,13 @@ export function ProductCard({
   };
 
   const shareProduct = async () => {
-    const url = `${window.location.origin}${window.location.pathname}${window.location.search}#${anchorId}`;
-    const payload: ShareData = { title, url };
-
-    if (shouldUseNativeShare(payload)) {
-      try {
-        await navigator.share(payload);
-        return;
-      } catch (error) {
-        // User dismissed the sheet — no error toast, no "copied" note.
-        if (error instanceof DOMException && error.name === "AbortError") {
-          return;
-        }
-        // Share failed for another reason — fall through to clipboard.
-      }
-    }
+    const url = buildProductShareUrl(locale, categorySlug, anchorId);
+    const outcome = await tryWebShare(url, title);
+    // Shared OK, or user dismissed the sheet — never auto-copy after AbortError.
+    if (outcome === "shared" || outcome === "abort") return;
 
     const copied = await copyShareUrl(url);
     if (!copied) return;
-
     showCopiedNote();
   };
 
@@ -275,7 +252,7 @@ export function ProductCard({
 
         {variant ? (
           <div className="product-card-meta">
-            <div className="product-card-size-block" ref={sizeRootRef}>
+            <div className="product-card-size-block">
               <span className="product-card-field-label">{labels.size}</span>
               {multiSize ? (
                 <>
@@ -288,8 +265,22 @@ export function ProductCard({
                     onClick={() => setSizeOpen((value) => !value)}
                   >
                     <span>{pickLocale(variant.sizeLabel, locale)}</span>
-                    <span className="product-card-caret" aria-hidden="true">
-                      {sizeOpen ? "⌃" : "⌄"}
+                    <span
+                      className={
+                        sizeOpen
+                          ? "product-card-caret is-open"
+                          : "product-card-caret"
+                      }
+                      aria-hidden="true"
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src="/icons/chevron-down.svg"
+                        alt=""
+                        width={20}
+                        height={20}
+                        className="product-card-caret-icon"
+                      />
                     </span>
                   </button>
                   {sizeOpen ? (
@@ -396,8 +387,22 @@ export function ProductCard({
               onClick={() => setSpecsOpen((value) => !value)}
             >
               <span>{labels.specifications}</span>
-              <span className="product-card-caret" aria-hidden="true">
-                {specsOpen ? "⌃" : "⌄"}
+              <span
+                className={
+                  specsOpen
+                    ? "product-card-caret is-open"
+                    : "product-card-caret"
+                }
+                aria-hidden="true"
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src="/icons/chevron-down.svg"
+                  alt=""
+                  width={20}
+                  height={20}
+                  className="product-card-caret-icon"
+                />
               </span>
             </button>
             {specsOpen ? (

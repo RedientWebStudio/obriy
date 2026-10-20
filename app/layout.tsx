@@ -1,20 +1,10 @@
 import type { ReactNode } from "react";
-import { Libre_Baskerville, Onest } from "next/font/google";
+/* Self-hosted — avoid next/font/google (SSL to fonts.googleapis.com fails on this host). */
+import "@fontsource/onest/400.css";
+import "@fontsource/onest/500.css";
+import "@fontsource/libre-baskerville/400.css";
+import { PRODUCT_HASH_BOOT_SCRIPT } from "@/lib/product-hash-boot";
 import "./globals.css";
-
-const onest = Onest({
-  subsets: ["latin", "latin-ext", "cyrillic", "cyrillic-ext"],
-  weight: ["400", "500"],
-  variable: "--font-onest",
-  display: "swap",
-});
-
-const libreBaskerville = Libre_Baskerville({
-  subsets: ["latin", "latin-ext"],
-  weight: "400",
-  variable: "--font-libre-baskerville",
-  display: "swap",
-});
 
 type Props = {
   children: ReactNode;
@@ -22,13 +12,17 @@ type Props = {
 
 export default function RootLayout({ children }: Props) {
   return (
-    <html
-      lang="uk"
-      className={`${onest.variable} ${libreBaskerville.variable} h-full antialiased`}
-    >
-      <body className={`${onest.className} min-h-full flex flex-col`}>
-        {children}
-      </body>
+    <html lang="uk" className="h-full antialiased" suppressHydrationWarning>
+      {/* Sync head boot — must run before `#product-…` nodes are parsed.
+          suppressHydrationWarning: boot may set data-product-* / overflow on
+          <html> before React hydrates (same pattern as theme scripts). */}
+      <head>
+        <script
+          id="obriy-product-hash-boot"
+          dangerouslySetInnerHTML={{ __html: PRODUCT_HASH_BOOT_SCRIPT }}
+        />
+      </head>
+      <body className="min-h-full flex flex-col">{children}</body>
     </html>
   );
 }

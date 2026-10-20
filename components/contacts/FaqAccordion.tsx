@@ -55,7 +55,7 @@ export function FaqAccordion({ items }: Props) {
                 >
                   <span className="faq-question">{item.question}</span>
                   <span className="faq-icon" aria-hidden="true">
-                    {open ? "×" : "+"}
+                    {open ? "−" : "+"}
                   </span>
                 </button>
 

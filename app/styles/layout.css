@@ -459,15 +459,39 @@
   background: var(--canvas);
   color: var(--ink);
   border-bottom: 1px solid transparent;
-  transition: border-color 160ms ease;
+  transition:
+    border-color 160ms ease,
+    transform 220ms ease;
 }
 
 .site-header.is-scrolled {
   border-bottom-color: #e3e3e3;
 }
 
+/* Global hide-on-scroll — slide Header up (all pages / widths). */
+.site-header.is-header-hidden {
+  transform: translate3d(0, calc(-1 * var(--header-height)), 0);
+  pointer-events: none;
+}
+
+/* Instant chrome snap before program anchor scroll (no mid-flight jump). */
+html[data-chrome-snap] .site-header,
+html[data-chrome-snap] body:has(.category-sticky-nav) .site-header,
+html[data-chrome-snap] body:has(.category-sticky-nav) .category-sticky-nav {
+  transition: none !important;
+}
+
 /*
-  Category hide-on-scroll: Header + Sticky share the same translate.
+  Product share deep-link: hold the page at top until JS scrolls once to the
+  card under Header + Sticky Nav (avoids native hash jump → correction).
+*/
+html[data-product-hash-pending] {
+  overflow: hidden;
+  scroll-behavior: auto !important;
+}
+
+/*
+  Category: Header + Sticky share the same translate.
   Sticky `top` stays --header-height (never animates). When hidden, both move
   up by one header height — the joint stays closed, no snap.
 */
@@ -501,11 +525,6 @@ body:has(.category-sticky-nav) .header-bar {
   min-height: 0;
 }
 
-body:has(.category-sticky-nav) .site-header.is-header-hidden {
-  transform: translate3d(0, calc(-1 * var(--header-height)), 0);
-  pointer-events: none;
-}
-
 /* Move with Header — same duration/easing/distance */
 body:has(.category-sticky-nav) .category-sticky-nav {
   top: var(--header-height);
@@ -518,6 +537,7 @@ body:has(.site-header.is-header-hidden) .category-sticky-nav {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .site-header,
   body:has(.category-sticky-nav) .site-header,
   body:has(.category-sticky-nav) .category-sticky-nav {
     transition: none;
@@ -588,21 +608,15 @@ body:has(.site-header.is-header-hidden) .category-sticky-nav {
 }
 
 /*
-  Hero — Figma 1440 × 720 (node 4:6) as composition reference.
-  Height: up to 648px (≈90% of 720); min fits the Figma text stack
-  (CTA bottom 554) so absolute tops never overflow the band.
-  Text tops use Figma px (not % of height): font sizes stay fixed, so
-  %-scaling was compressing eyebrow→title→body→CTA gaps.
+  Hero — Mobile-first Figma 390 × 610 (node 80:7).
+  Tablet ≥768 / Desktop ≥1024 restore approved tops and fluid height.
+  Text tops use Figma px (not % of height).
 */
 .hero {
   position: relative;
   isolation: isolate;
   width: 100%;
-  height: clamp(
-    35.375rem, /* 566px — CTA bottom 554 + ~12px breathing */
-    calc(100svh - var(--header-height)),
-    var(--hero-height-max)
-  );
+  height: var(--hero-height-max); /* 610 Mobile · 720 Tablet · 648 Desktop */
   overflow: clip;
   color: var(--on-inverse);
 }
@@ -657,25 +671,27 @@ body:has(.site-header.is-header-hidden) .category-sticky-nav {
 }
 
 .hero-eyebrow {
-  top: 168px; /* Figma 4:8 */
+  top: 6.25rem; /* 100 — Figma Mobile 80:9 */
+  max-width: calc(100% - (2 * var(--page-inline)));
   font-family: var(--font-family-sans);
   font-size: var(--text-eyebrow);
   font-weight: 500;
   line-height: 1.25;
   letter-spacing: var(--text-eyebrow-tracking);
   color: var(--on-inverse);
-  white-space: nowrap;
+  white-space: normal;
 }
 
 .hero-title {
-  top: 212px; /* Figma 4:9 — gap after eyebrow box = 20px */
+  top: 8.875rem; /* 142 — Figma Mobile 80:10 */
+  max-width: calc(100% - (2 * var(--page-inline)));
   font-family: var(--font-family-sans);
   font-size: var(--text-hero);
   font-weight: 500;
   /* Figma wrapper leading-[0]; line boxes carry 1.1 */
   line-height: 0;
   color: var(--on-inverse);
-  white-space: nowrap;
+  white-space: normal;
 }
 
 /* Narrow desktop only: slightly smaller H1; above 1300 keep 58px token */
@@ -688,38 +704,84 @@ body:has(.site-header.is-header-hidden) .category-sticky-nav {
 .hero-title-line {
   display: block;
   line-height: var(--text-hero-leading);
-}
-
-.hero-body {
-  top: 369px; /* Figma 12:2 — gap after title box = 29px */
-  font-family: var(--font-family-sans);
-  font-size: var(--text-body);
-  font-weight: 400;
-  line-height: 0;
-  color: var(--white);
   white-space: nowrap;
 }
 
+/* Narrow phones: keep 2-line H1 without colliding with body (Figma ref 390) */
+@media (max-width: 359px) {
+  .hero-title {
+    font-size: 1.875rem; /* 30px */
+  }
+}
+
+.hero-body {
+  top: 15.625rem; /* 250 — Figma Mobile 80:14 */
+  max-width: min(20.9375rem, calc(100% - (2 * var(--page-inline)))); /* 335 */
+  font-family: var(--font-family-sans);
+  font-size: var(--text-body);
+  font-weight: 400;
+  line-height: var(--text-body-leading);
+  color: var(--white);
+  white-space: normal;
+}
+
+/* Mobile: one flowing paragraph (Figma); spans join with a space */
 .hero-body-line {
-  display: block;
+  display: inline;
   line-height: var(--text-body-leading);
 }
 
+.hero-body-line + .hero-body-line::before {
+  content: " ";
+}
+
 .hero-cta {
-  top: 502px; /* Figma 4:11 — gap after body box = 79px */
+  top: 22.125rem; /* 354 — Figma Mobile 80:11 */
+  /* Figma Primary 188×48 — drop Desktop min-width 230 */
+  min-width: 0;
+  width: max-content;
+  max-width: calc(100% - (2 * var(--page-inline)));
+  padding-inline: 1.125rem; /* 18px */
 }
 
 /*
-  Tablet (≥768): keep eyebrow/title tops (same vertical anchor as Desktop).
-  Only re-anchor body/CTA — Desktop tops assume 58px H1 (~128px box);
-  36px tablet H1 (~79px) left ~78px of air. Desktop restores Figma tops.
-
-  EN body: forced line1 is much longer than UK; allow natural wrap at the
-  UK measure so lines balance. UK keeps Desktop-style forced breaks.
+  Tablet (≥768): restore approved anchors (eyebrow/title = Desktop tops).
+  Body/CTA compact for 36px H1. EN body wraps at UK measure.
 */
 @media (min-width: 768px) {
+  .hero {
+    height: clamp(
+      35.375rem,
+      calc(100svh - var(--header-height)),
+      var(--hero-height-max)
+    );
+  }
+
+  .hero-eyebrow {
+    top: 168px;
+    max-width: none;
+    white-space: nowrap;
+  }
+
+  .hero-title {
+    top: 212px;
+    max-width: none;
+    white-space: nowrap;
+  }
+
   .hero-body {
     top: 307px; /* 212 + 79 + 16 — compact title→body */
+    max-width: none;
+    line-height: 0;
+    white-space: nowrap;
+  }
+
+  .hero-body-line {
+    display: block;
+  }
+
+  .hero-body-line + .hero-body-line::before {
+    content: none;
   }
 
   .hero-body:lang(en) {
@@ -738,6 +800,10 @@ body:has(.site-header.is-header-hidden) .category-sticky-nav {
 
   .hero-cta {
     top: 400px; /* 307 + 45 + 48 */
+    min-width: 14.375rem;
+    width: max-content;
+    max-width: none;
+    padding-inline: 1.5625rem;
   }
 }
 
@@ -764,11 +830,14 @@ body:has(.site-header.is-header-hidden) .category-sticky-nav {
   }
 }
 
-/* About + Advantages — Figma section 880 */
+/*
+  About + Advantages — Mobile-first Figma 80:15.
+  Tablet/Desktop restore wider measures and Desktop section rhythm.
+*/
 .about-advantages {
   background: var(--canvas);
   color: var(--ink);
-  padding-block: 5.75rem 16.25rem; /* 92 top accent → content; bottom to footer */
+  padding-block: 4rem 3.5rem; /* 64 top accent · ~56 bottom → footer */
 }
 
 .about-block {
@@ -779,8 +848,8 @@ body:has(.site-header.is-header-hidden) .category-sticky-nav {
 }
 
 .about-heading {
-  margin: 2.375rem 0 0; /* 132 − 92 − 2 */
-  max-width: 47.5rem; /* 760px */
+  margin: 2.375rem 0 0; /* 104 − 64 − 2 */
+  max-width: 20.875rem; /* 334 — Figma Mobile */
   font-family: var(--font-family-sans);
   font-size: var(--text-section);
   font-weight: 500;
@@ -789,29 +858,35 @@ body:has(.site-header.is-header-hidden) .category-sticky-nav {
 }
 
 .about-text {
-  margin: 1.8125rem 0 0; /* 205 − 132 − 44 */
-  max-width: 57.5rem; /* 920px */
+  margin: 1.75rem 0 0; /* ~28px under 2-line heading → text @200 */
+  max-width: 20rem; /* 320 */
   font-family: var(--font-family-sans);
   font-size: var(--text-body);
   font-weight: 400;
-  line-height: var(--text-body-leading);
+  line-height: 1.45; /* Figma Mobile 80:18 */
   color: var(--ink-muted);
 }
 
+/* Mobile: continuous paragraph; Tablet+ restores forced lines */
 .about-text-line {
-  display: block;
+  display: inline;
+}
+
+.about-text-line + .about-text-line::before {
+  content: " ";
 }
 
 .advantages-block {
   display: flex;
   flex-direction: column;
   align-items: center;
-  /* Figma: About text bottom 259 → Advantages accent 318 → gap 59 */
-  margin-top: 3.6875rem; /* 59px */
+  /* Figma Mobile: about text → accent ~60 */
+  margin-top: 3.75rem; /* 60px */
 }
 
 .advantages-heading {
-  margin: 2.25rem 0 0; /* 356 − 318 − 2 */
+  margin: 2.375rem 0 0; /* 393 − 353 − 2 */
+  max-width: 21.875rem; /* 350 */
   font-family: var(--font-family-sans);
   font-size: var(--text-section);
   font-weight: 500;
@@ -822,23 +897,54 @@ body:has(.site-header.is-header-hidden) .category-sticky-nav {
 
 /*
   Advantages grid — mobile-first (no max-width: 1023 ceiling).
-  Mobile: 1 col. Tablet ≥768: one centered 2×2 cluster (Figma 2×320 + 66).
-  Desktop ≥1024: 4-col override (same rule wins by cascade, not a gap band).
+  Mobile: 1 col, title|number row. Tablet ≥768: 2×2. Desktop ≥1024: 4-col.
 */
 .advantages-grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  gap: var(--grid-gap-advantages);
+  gap: 2.375rem; /* ~38px between items — Figma 80:15 */
   width: 100%;
-  margin-top: 4.25rem; /* numbers at 468 from heading 356 */
+  margin-top: 2.4375rem; /* 468 − 393 − 36 */
   min-width: 0;
 }
 
 @media (min-width: 768px) {
+  .about-advantages {
+    padding-block: 5.75rem 16.25rem; /* approved Tablet/Desktop band */
+  }
+
+  .about-heading {
+    max-width: 47.5rem; /* 760px */
+  }
+
+  .about-text {
+    margin: 1.8125rem 0 0;
+    max-width: 57.5rem; /* 920px */
+    line-height: var(--text-body-leading);
+  }
+
+  .about-text-line {
+    display: block;
+  }
+
+  .about-text-line + .about-text-line::before {
+    content: none;
+  }
+
+  .advantages-block {
+    margin-top: 3.6875rem; /* 59px */
+  }
+
+  .advantages-heading {
+    margin: 2.25rem 0 0;
+    max-width: none;
+  }
+
   .advantages-grid {
     /* Figma Tablet: 320 + 66 + 320 = 706 — same cluster at 768…1023 */
     width: min(100%, calc(20rem * 2 + 4.125rem));
     margin-inline: auto;
+    margin-top: 4.25rem;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     column-gap: 4.125rem;
     row-gap: 4.125rem;
@@ -855,13 +961,22 @@ body:has(.site-header.is-header-hidden) .category-sticky-nav {
   }
 }
 
+/* Mobile: number sits on the title row (Figma 80:21–32) */
 .advantage-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas:
+    "title number"
+    "text text";
+  column-gap: 0.75rem;
+  align-items: start;
   min-width: 0;
   text-align: start;
 }
 
 .advantage-number {
-  margin: 0;
+  grid-area: number;
+  margin: 0.1875rem 0 0; /* optical align with 21px title */
   font-family: var(--font-family-sans);
   font-size: var(--text-number);
   font-weight: 400;
@@ -870,7 +985,9 @@ body:has(.site-header.is-header-hidden) .category-sticky-nav {
 }
 
 .advantage-title {
-  margin: 1.875rem 0 0; /* 518 − 468 − ~20 */
+  grid-area: title;
+  margin: 0;
+  max-width: 17.8125rem; /* 285 — Figma */
   font-family: var(--font-family-sans);
   font-size: var(--text-card-title);
   font-weight: 500;
@@ -879,7 +996,9 @@ body:has(.site-header.is-header-hidden) .category-sticky-nav {
 }
 
 .advantage-text {
-  margin: 1rem 0 0; /* 565 − 518 − ~31 */
+  grid-area: text;
+  margin: 0.75rem 0 0; /* ~12px under title */
+  max-width: 21.875rem; /* 350 */
   font-family: var(--font-family-sans);
   font-size: var(--text-body);
   font-weight: 400;
@@ -887,22 +1006,50 @@ body:has(.site-header.is-header-hidden) .category-sticky-nav {
   color: var(--ink-muted);
 }
 
-/* Footer — Figma 240 structure; tighter vertical rhythm (~−10%) */
+@media (min-width: 768px) {
+  .advantage-card {
+    display: block;
+  }
+
+  .advantage-number {
+    margin: 0;
+  }
+
+  .advantage-title {
+    margin: 1.875rem 0 0; /* 518 − 468 − ~20 */
+    max-width: none;
+  }
+
+  .advantage-text {
+    margin: 1rem 0 0; /* 565 − 518 − ~31 */
+    max-width: none;
+  }
+}
+
+/*
+  Footer — Mobile: contact row = phone (start) + socials (end), schedule below.
+  Tablet ≥768 restores the 3-track contact row (phone | schedule | socials).
+*/
 .site-footer {
   background: var(--surface-inverse);
   color: var(--on-inverse);
-  padding-block: 2.5rem; /* 40px (was 44) */
+  padding-block: 3.25rem 2.875rem; /* ~52 top · ~46 bottom */
 }
 
 .footer-top {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-areas:
+    "phone socials"
+    "schedule schedule";
   align-items: center;
-  column-gap: 1.5rem;
+  column-gap: 0.75rem;
+  row-gap: 1.25rem;
   min-width: 0;
 }
 
 .footer-phone {
+  grid-area: phone;
   justify-self: start;
   font-family: var(--font-family-sans);
   font-size: var(--text-footer);
@@ -921,33 +1068,36 @@ body:has(.site-header.is-header-hidden) .category-sticky-nav {
 }
 
 .footer-schedule {
-  justify-self: center;
+  grid-area: schedule;
   margin: 0;
   font-family: var(--font-family-sans);
   font-size: var(--text-footer);
   font-weight: 400;
   line-height: 1.25;
   color: var(--on-inverse);
-  text-align: center;
-  white-space: nowrap;
+  text-align: start;
+  white-space: normal;
 }
 
 .footer-socials {
+  grid-area: socials;
   justify-self: end;
   display: flex;
   align-items: center;
-  gap: 2.8125rem; /* 45px between icons */
+  gap: 1.25rem; /* room beside phone on 320 */
   margin: 0;
   padding: 0;
   list-style: none;
+  min-width: 0;
 }
 
 .footer-social {
   display: grid;
   place-items: center;
-  /* Fixed slot: hover scale does not shift neighbors */
-  width: 36px;
-  height: 36px;
+  /* 44×44 tap target; icon stays 30px */
+  box-sizing: border-box;
+  width: 2.75rem;
+  height: 2.75rem;
   overflow: visible;
   border-radius: 2px;
 }
@@ -956,12 +1106,11 @@ body:has(.site-header.is-header-hidden) .category-sticky-nav {
   Hover on .footer-social (not only .footer-social-link): when social URLs
   are unset, Footer renders <span class="footer-social"> — the link class
   is absent, so a link-only hover rule never fires.
-  Base 36px ≈ +20% vs previous 30px; hover scales the img itself to 1.1.
 */
 .footer-social img {
   display: block;
-  width: 36px;
-  height: 36px;
+  width: 30px;
+  height: 30px;
   max-width: none;
   transform: scale(1);
   transform-origin: center;
@@ -976,18 +1125,77 @@ body:has(.site-header.is-header-hidden) .category-sticky-nav {
 }
 
 .footer-divider {
-  margin-top: 1.6875rem; /* 27px (was 30) */
+  margin-top: 2.25rem; /* ~214 − 148 − 30 */
   height: 1px;
   background: var(--divider-inverse);
 }
 
 .footer-bottom {
   display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  margin-top: 2rem; /* 32px (was 36) */
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1.25rem; /* 294 − 254 − 20 */
+  margin-top: 2.5rem; /* 254 − 214 */
+}
+
+@media (min-width: 768px) {
+  .site-footer {
+    padding-block: 2.5rem; /* approved Tablet/Desktop */
+  }
+
+  .footer-top {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    grid-template-areas: none;
+    align-items: center;
+    column-gap: 1.5rem;
+    row-gap: 0;
+    gap: 0;
+  }
+
+  .footer-phone {
+    grid-area: auto;
+    justify-self: start;
+  }
+
+  .footer-schedule {
+    grid-area: auto;
+    justify-self: center;
+    margin: 0;
+    text-align: center;
+    white-space: nowrap;
+  }
+
+  .footer-socials {
+    grid-area: auto;
+    justify-self: end;
+    gap: 2.8125rem; /* 45px */
+    margin: 0;
+  }
+
+  .footer-social {
+    width: 36px;
+    height: 36px;
+    margin: 0;
+  }
+
+  .footer-social img {
+    width: 36px;
+    height: 36px;
+  }
+
+  .footer-divider {
+    margin-top: 1.6875rem;
+  }
+
+  .footer-bottom {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-top: 2rem;
+  }
 }
 
 .footer-meta {
@@ -1030,19 +1238,20 @@ a.footer-credit-name:focus-visible {
 }
 
 /*
-  Catalog — mobile 1-col → tablet 2-col (Figma 285:2 @834) → desktop 3-col (102:2).
-  Tablet band 768–1023: 2-col fluid, gap 16, pad 32, tile height 200
-  (at 834: 2×377). Desktop ≥1024: 400×280, col-gap 48, row-gap 40.
+  Catalog — Mobile editorial grid (Figma 146:2 @390) →
+  Tablet equal 2-col (285:2 @834) → Desktop 3-col (102:2).
+  Full-span tiles on Mobile: 1, 4, 7, 12 (own-production, sofas,
+  dining-sets, textiles) — order matches lib/catalog-categories.
 */
 .catalog-page {
   background: var(--canvas);
   color: var(--ink);
-  padding-bottom: 4.5rem;
+  padding-bottom: 5.3125rem; /* 85px — Figma 1717 − 1632 */
 }
 
 .catalog-intro {
-  padding-top: 2rem;
-  padding-bottom: 1.5rem;
+  padding-top: 2.25rem; /* 36px: H1 @108 under header 72 */
+  padding-bottom: 2rem; /* → grid @208 */
 }
 
 .catalog-heading {
@@ -1056,7 +1265,7 @@ a.footer-credit-name:focus-visible {
 }
 
 .catalog-lead {
-  margin: 0.75rem 0 0; /* ~12px under heading box */
+  margin: 0.75rem 0 0; /* 12px — Figma 154 − 108 − 34.5 */
   font-family: var(--font-family-sans);
   font-size: var(--text-body);
   font-weight: 400;
@@ -1066,21 +1275,28 @@ a.footer-credit-name:focus-visible {
 
 .catalog-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  column-gap: 1rem;
-  row-gap: 1rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 1rem; /* 16px — 203 − 20 − 167 */
+  row-gap: 1rem; /* 16px — 388 − 208 − 164 */
   margin: 0;
   padding: 0;
   list-style: none;
+}
+
+/* Editorial full-width rows (Figma Mobile 146:2) */
+.catalog-grid > :nth-child(1),
+.catalog-grid > :nth-child(4),
+.catalog-grid > :nth-child(7),
+.catalog-grid > :nth-child(12) {
+  grid-column: 1 / -1;
 }
 
 .category-card {
   position: relative;
   display: block;
   width: 100%;
-  /* Mobile: near Figma tablet ratio; tablet shell locks ~377×200 @834 */
-  aspect-ratio: 377 / 200;
-  height: auto;
+  height: 10.25rem; /* 164px — Figma Mobile tiles */
+  aspect-ratio: auto;
   overflow: clip;
   border: 1px solid rgb(23 23 23 / 0.55);
   border-radius: 10px;
@@ -1104,9 +1320,9 @@ a.footer-credit-name:focus-visible {
   align-items: center;
   justify-content: center;
   box-sizing: border-box;
-  min-height: 2.5rem; /* 40px tablet caption bar */
+  min-height: 2.0625rem; /* 33px — Figma Mobile caption bar */
   height: auto;
-  padding: 0.375rem 0.875rem;
+  padding: 0.25rem 0.75rem;
   background: color-mix(in srgb, var(--canvas) 76%, transparent);
 }
 
@@ -1144,8 +1360,21 @@ a.footer-credit-name:focus-visible {
     row-gap: 1.25rem; /* 20px (428 − 208 − 200) */
   }
 
+  .catalog-grid > :nth-child(1),
+  .catalog-grid > :nth-child(4),
+  .catalog-grid > :nth-child(7),
+  .catalog-grid > :nth-child(12) {
+    grid-column: auto;
+  }
+
   .category-card {
+    height: auto;
     aspect-ratio: 377 / 200; /* Figma Catalog Tablet tiles */
+  }
+
+  .category-card-caption {
+    min-height: 2.5rem; /* 40px tablet caption bar */
+    padding: 0.375rem 0.875rem;
   }
 }
 
@@ -1225,7 +1454,8 @@ a.footer-credit-name:focus-visible {
   .category-floating-cta,
   .category-empty-link,
   .product-card-size-option,
-  .product-card-desc-toggle {
+  .product-card-desc-toggle,
+  .product-card-caret-icon {
     transition: none;
   }
 
@@ -1237,13 +1467,7 @@ a.footer-credit-name:focus-visible {
 
   /* Preserve positioning transforms when motion is reduced */
   .category-floating-cta:hover {
-    transform: translateY(-50%);
-  }
-
-  @media (min-width: 768px) {
-    .category-floating-cta:hover {
-      transform: none;
-    }
+    transform: none; /* Mobile / Tablet — horizontal CTA */
   }
 
   @media (min-width: 1024px) {
@@ -1254,7 +1478,8 @@ a.footer-credit-name:focus-visible {
 }
 
 /*
-  Universal category page — Desktop (Figma Category Beds 153:2 as visual ref).
+  Universal category page —
+  Mobile (Figma 175:2 @390) → Tablet (≥768) → Desktop (≥1024, 153:2).
   Sticky subcategory nav + product rows + sale + floating CTA.
 */
 .category-page {
@@ -1263,7 +1488,18 @@ a.footer-credit-name:focus-visible {
   position: relative;
   background: var(--canvas);
   color: var(--ink);
-  padding-bottom: 6.5rem; /* moderate space before full footer */
+  padding-bottom: 7.5rem; /* clearance for bottom-right Mobile CTA */
+}
+
+/*
+  Only while a product Share / deep-link hash is active — room to align the
+  last card under Sticky Nav. Normal browsing keeps the compact padding above.
+*/
+html[data-product-deep-link] .category-page {
+  padding-bottom: max(
+    7.5rem,
+    calc(100dvh - var(--header-height) - var(--sticky-nav-height))
+  );
 }
 
 .category-sticky-nav {
@@ -1289,12 +1525,15 @@ a.footer-credit-name:focus-visible {
   height: var(--sticky-nav-height);
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  /* Mobile Figma 175:2 — trigger aligned end as «Category / Sub» */
+  justify-content: flex-end;
   gap: 1rem;
   min-width: 0;
 }
 
 .category-sticky-category-label {
+  /* Tablet/Desktop show this; Mobile folds into the trigger prefix */
+  display: none;
   margin: 0;
   min-width: 0;
   flex: 1 1 auto;
@@ -1308,11 +1547,19 @@ a.footer-credit-name:focus-visible {
   text-overflow: ellipsis;
 }
 
+.category-sticky-mobile-prefix {
+  display: inline;
+}
+
+.category-sticky-mobile-slash {
+  white-space: pre;
+}
+
 .category-sticky-right {
   position: relative;
   flex: 0 1 auto;
   min-width: 0;
-  max-width: 58%;
+  max-width: 100%;
 }
 
 .category-sticky-trigger {
@@ -1441,21 +1688,23 @@ a.footer-credit-name:focus-visible {
 }
 
 .category-section {
-  padding-top: 4.25rem; /* 68px: content top 208 under header+nav ≈ 72+52+68 */
-  scroll-margin-top: calc(var(--header-height) + var(--sticky-nav-height));
+  /* Mobile: 40px under sticky (164 − 72 − 52) — Figma 175:2 */
+  padding-top: 2.5rem;
+  /* --header-offset collapses to 0 while Header is hidden on Category */
+  scroll-margin-top: calc(var(--header-offset, var(--header-height)) + var(--sticky-nav-height));
 }
 
 .category-section--sale {
-  padding-top: 6.25rem; /* ~100px between soft list and sale (2500−208−2194) */
+  padding-top: 4.375rem; /* ~70px soft → sale (2981 − 2911) */
   padding-bottom: 2rem;
 }
 
 .category-section-header {
-  margin-bottom: 2.5rem;
+  margin-bottom: 2rem; /* lead → first card @130 */
 }
 
 .category-section + .category-section {
-  padding-top: 5rem;
+  padding-top: 4.375rem;
 }
 
 .category-section-title-row {
@@ -1473,6 +1722,8 @@ a.footer-credit-name:focus-visible {
   font-weight: 500;
   line-height: var(--text-section-leading);
   color: var(--ink);
+  /* Native hash / scrollIntoView — JS overrides when Header state differs */
+  scroll-margin-top: calc(var(--header-offset, var(--header-height)) + var(--sticky-nav-height));
 }
 
 .category-sale-accent {
@@ -1486,8 +1737,7 @@ a.footer-credit-name:focus-visible {
 .category-product-list {
   display: flex;
   flex-direction: column;
-  /* Former divider used 2rem above and below the 1px rule. */
-  gap: 4rem;
+  gap: 2.5rem; /* 40px — Figma Mobile 630 − 130 − 460 */
 }
 
 .category-product-item {
@@ -1496,10 +1746,12 @@ a.footer-credit-name:focus-visible {
 }
 
 .product-card {
-  scroll-margin-top: calc(var(--header-height) + var(--sticky-nav-height));
+  scroll-margin-top: calc(var(--header-offset, var(--header-height)) + var(--sticky-nav-height));
   display: grid;
-  grid-template-columns: minmax(0, 36.875rem) minmax(0, 1fr); /* 590 + rest */
-  column-gap: 6rem; /* 96px → info at x686 */
+  /* Mobile / Tablet: stacked gallery → info (Desktop restores 2-col @1024) */
+  grid-template-columns: minmax(0, 1fr);
+  column-gap: 0;
+  row-gap: 1.25rem; /* 20px — title @270 after 220 media + controls */
   align-items: start;
   min-width: 0;
 }
@@ -1516,9 +1768,21 @@ a.footer-credit-name:focus-visible {
   padding: 0;
   border: none;
   background: transparent;
-  cursor: zoom-in;
+  /* Mobile / Tablet: no zoom affordance; horizontal swipe on media */
+  cursor: default;
+  touch-action: pan-y;
   border-radius: 8px;
   overflow: clip;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+@media (min-width: 1024px) {
+  .product-card-media-button {
+    cursor: zoom-in;
+    touch-action: manipulation;
+    user-select: auto;
+  }
 }
 
 .product-card-media-image {
@@ -1529,13 +1793,13 @@ a.footer-credit-name:focus-visible {
   display: grid;
   place-items: center;
   width: 100%;
-  aspect-ratio: 590 / 332;
+  aspect-ratio: 350 / 220; /* Figma Mobile gallery */
   border-radius: 8px;
   background: var(--product-placeholder-a);
 }
 
 .product-card-media-button.has-image {
-  aspect-ratio: 590 / 332;
+  aspect-ratio: 350 / 220;
 }
 
 .product-card-media-label {
@@ -1583,7 +1847,8 @@ a.footer-credit-name:focus-visible {
 .product-card-info {
   position: relative;
   min-width: 0;
-  max-width: 38.125rem; /* 610px */
+  max-width: none;
+  width: 100%;
 }
 
 .product-card-title-row {
@@ -1595,9 +1860,9 @@ a.footer-credit-name:focus-visible {
 
 .product-card-title {
   margin: 0;
-  max-width: 29.375rem; /* 470px */
+  max-width: none;
   font-family: var(--font-family-sans);
-  font-size: var(--text-card-title); /* 26px */
+  font-size: var(--text-card-title); /* 21px Mobile */
   font-weight: 500;
   line-height: 1.18;
   color: var(--ink);
@@ -1679,9 +1944,14 @@ a.footer-credit-name:focus-visible {
 
 .product-card-meta {
   display: grid;
-  grid-template-columns: minmax(0, 13.125rem) minmax(0, 1fr); /* 210 + price */
-  column-gap: 7.5rem; /* ≈120 → price at x330 */
-  margin-top: 2.25rem; /* size label at y66 */
+  /*
+    Mobile ~60/40 (3fr / 2fr). Price column mins to content so currency
+    never collapses; Size takes the rest and truncates long labels.
+    Tablet/Desktop override columns below.
+  */
+  grid-template-columns: minmax(0, 3fr) minmax(max-content, 2fr);
+  column-gap: 1rem;
+  margin-top: 1.3125rem; /* ~21px under title */
   align-items: start;
 }
 
@@ -1698,13 +1968,17 @@ a.footer-credit-name:focus-visible {
 /* Shared geometry for Size control + Specifications accordion trigger */
 .product-card-size-block,
 .product-card-specs {
-  --product-field-width: 13.125rem; /* 210px */
+  --product-field-width: 12.8125rem; /* 205px — Mobile size band / Specs */
   position: relative;
   box-sizing: border-box;
-  /* Fixed band (not 100% of different parents) so Size + Specs match */
-  width: var(--product-field-width);
-  max-width: 100%;
+  width: min(100%, var(--product-field-width));
   min-width: 0;
+}
+
+/* Meta Size column: fill the ~60% track (do not keep the old 205px cap). */
+.product-card-meta .product-card-size-block {
+  width: 100%;
+  max-width: none;
 }
 
 .product-card-size-value {
@@ -1716,7 +1990,7 @@ a.footer-credit-name:focus-visible {
   border-top: 1px solid #e3e3e3;
   border-bottom: 1px solid #e3e3e3;
   font-family: var(--font-family-sans);
-  font-size: var(--text-nav);
+  font-size: 0.9375rem; /* 15px Mobile */
   font-weight: 500;
   line-height: 1.25;
   color: var(--ink);
@@ -1731,6 +2005,7 @@ a.footer-credit-name:focus-visible {
   box-sizing: border-box;
   width: 100%;
   max-width: none;
+  min-width: 0;
   min-height: 2.75rem; /* 44px */
   margin: 0;
   padding: 0.5rem 0;
@@ -1740,26 +2015,53 @@ a.footer-credit-name:focus-visible {
   background: transparent;
   color: var(--ink);
   font-family: var(--font-family-sans);
-  font-size: var(--text-nav); /* 19px */
+  font-size: 0.9375rem; /* 15px Mobile */
   font-weight: 500;
   line-height: 1.25;
   text-align: left;
   cursor: pointer;
 }
 
+/* Long size labels stay inside the Size column; price track is untouched. */
+.product-card-size-trigger > span:not(.product-card-caret) {
+  min-width: 0;
+  flex: 1 1 auto;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .product-card-caret {
-  font-size: 1.0625rem;
-  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 1.25rem; /* 20px */
+  height: 1.25rem;
   color: var(--ink);
+}
+
+.product-card-caret-icon {
+  display: block;
+  width: 1.25rem;
+  height: 1.25rem;
+  transition: transform 160ms ease;
+}
+
+.product-card-caret.is-open .product-card-caret-icon {
+  transform: rotate(180deg);
 }
 
 .product-card-size-menu {
   position: absolute;
   top: calc(100% + 0.25rem);
   left: 0;
+  right: 0;
   z-index: 20;
   box-sizing: border-box;
-  width: 15.625rem; /* 250px — UI State */
+  /* Match Size column only — do not spill over Price */
+  width: 100%;
+  max-width: 100%;
   margin: 0;
   padding: 0.5rem 0;
   list-style: none;
@@ -1793,29 +2095,34 @@ a.footer-credit-name:focus-visible {
 }
 
 .product-card-price-block {
-  min-width: 0;
+  min-width: min-content;
+  max-width: 100%;
+  justify-self: end;
+  text-align: right;
 }
 
 .product-card-price {
   margin: 0;
   font-family: var(--font-family-sans);
-  font-size: var(--text-card-title); /* 26px */
+  font-size: 0.9375rem; /* 15px — Figma Mobile */
   font-weight: 500;
-  line-height: 1.18;
+  line-height: 1.25;
   color: var(--ink);
+  white-space: nowrap;
 }
 
 .product-card-sale-row {
   display: flex;
   flex-wrap: wrap;
   align-items: baseline;
+  justify-content: flex-end;
   gap: 0.75rem;
   margin: 0.3rem 0 0;
 }
 
 .product-card-compare {
   font-family: var(--font-family-sans);
-  font-size: 1.0625rem; /* 17px */
+  font-size: 0.9375rem; /* 15px Mobile */
   font-weight: 400;
   line-height: 1.4;
   color: var(--ink-muted);
@@ -1826,21 +2133,21 @@ a.footer-credit-name:focus-visible {
 
 .product-card-discount {
   font-family: var(--font-family-sans);
-  font-size: 1.0625rem;
+  font-size: 0.9375rem;
   font-weight: 500;
   line-height: 1.4;
   color: var(--brand);
 }
 
 .product-card-desc-block {
-  margin-top: 2rem; /* description ~y168 */
-  max-width: 35rem; /* 560px */
+  margin-top: 1.25rem;
+  max-width: none;
 }
 
 .product-card-desc {
   margin: 0;
   font-family: var(--font-family-sans);
-  font-size: 1.0625rem; /* 17px */
+  font-size: 0.9375rem; /* 15px Mobile */
   font-weight: 400;
   line-height: 1.4;
   color: var(--ink-muted);
@@ -1866,15 +2173,27 @@ a.footer-credit-name:focus-visible {
   cursor: pointer;
   border-radius: 2px;
   transition: color 200ms ease;
+  -webkit-tap-highlight-color: transparent;
 }
 
-.product-card-desc-toggle:hover,
+/* Keyboard focus only — avoid sticky :focus color after touch. */
 .product-card-desc-toggle:focus-visible {
   color: var(--brand);
 }
 
+/* Real mouse hover only — touch must not leave sticky brand red. */
+@media (hover: hover) and (pointer: fine) {
+  .product-card-desc-toggle:hover {
+    color: var(--brand);
+  }
+}
+
+.product-card-desc-toggle:active {
+  color: var(--ink);
+}
+
 .product-card-specs {
-  margin-top: 1.75rem;
+  margin-top: 1.25rem;
 }
 
 .product-card-specs-trigger {
@@ -1894,8 +2213,8 @@ a.footer-credit-name:focus-visible {
   background: transparent;
   color: var(--ink);
   font-family: var(--font-family-sans);
-  font-size: 0.9375rem; /* 15px — lighter accordion cue vs Size dropdown */
-  font-weight: 400;
+  font-size: 0.9375rem; /* 15px */
+  font-weight: 500; /* Figma Mobile accordion */
   line-height: 1.2;
   text-align: left;
   cursor: pointer;
@@ -1937,6 +2256,22 @@ a.footer-credit-name:focus-visible {
   Gallery is NOT independently centered. Desktop restored at ≥1024.
 */
 @media (min-width: 768px) {
+  .category-sticky-nav-inner {
+    justify-content: space-between;
+  }
+
+  .category-sticky-category-label {
+    display: block;
+  }
+
+  .category-sticky-mobile-prefix {
+    display: none;
+  }
+
+  .category-sticky-right {
+    max-width: 58%;
+  }
+
   /* Left category + right subcategory — same type weight on Tablet */
   .category-sticky-category-label,
   .category-sticky-trigger {
@@ -1945,6 +2280,18 @@ a.footer-credit-name:focus-visible {
     font-size: 1rem; /* 16px */
     font-weight: 500;
     line-height: 1.25;
+  }
+
+  .category-section {
+    padding-top: 4.25rem; /* approved Tablet spacing */
+  }
+
+  .category-section--sale {
+    padding-top: 6.25rem;
+  }
+
+  .category-section + .category-section {
+    padding-top: 5rem;
   }
 
   .category-section-heading {
@@ -1984,6 +2331,11 @@ a.footer-credit-name:focus-visible {
     row-gap: 1rem;
   }
 
+  .product-card-media,
+  .product-card-media-button.has-image {
+    aspect-ratio: 590 / 332;
+  }
+
   .product-card-gallery {
     width: 100%;
     max-width: none;
@@ -2006,6 +2358,20 @@ a.footer-credit-name:focus-visible {
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     column-gap: 1.75rem;
     margin-top: 1.25rem;
+  }
+
+  .product-card-meta .product-card-size-block {
+    width: min(100%, var(--product-field-width));
+  }
+
+  .product-card-price-block {
+    justify-self: start;
+    text-align: left;
+    min-width: 0;
+  }
+
+  .product-card-sale-row {
+    justify-content: flex-start;
   }
 
   .product-card-field-label {
@@ -2050,7 +2416,11 @@ a.footer-credit-name:focus-visible {
     margin-top: 1.25rem;
   }
 
-  .product-card-specs-trigger,
+  .product-card-specs-trigger {
+    font-size: 0.875rem; /* 14px */
+    font-weight: 400;
+  }
+
   .product-card-spec-row {
     font-size: 0.875rem; /* 14px */
   }
@@ -2173,6 +2543,44 @@ a.footer-credit-name:focus-visible {
   }
 }
 
+/*
+  Vacant category shell (assortment not ready — own-production).
+  Fills the viewport under Header; Footer stays at the bottom on short pages.
+  Does not affect ready categories with product sections.
+*/
+.catalog-category-shell--vacant {
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  min-height: calc(100vh - var(--header-height));
+  min-height: calc(100dvh - var(--header-height));
+}
+
+.catalog-category-shell--vacant .category-page--vacant {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  /* CTA clearance without forcing a tall empty band */
+  padding-bottom: max(5rem, calc(env(safe-area-inset-bottom, 0px) + 4.5rem));
+}
+
+.catalog-category-shell--vacant .category-page-vacant-inner {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-height: 0;
+}
+
+.catalog-category-shell--vacant .category-empty {
+  /* Vertical balance via auto margins; collapses cleanly when content overflows */
+  margin-block: auto;
+  margin-inline: auto;
+  width: 100%;
+  padding-block: 2.5rem;
+}
+
 .category-empty {
   display: flex;
   flex-direction: column;
@@ -2214,37 +2622,54 @@ a.footer-credit-name:focus-visible {
 }
 
 /*
-  Floating CTA — Mobile default: vertical right-edge tab.
-  Tablet (768–1023): horizontal pill, bottom-right (Figma Mobile CTA 212:5).
-  Desktop (≥1024): vertical tab restored.
+  Floating CTA —
+  Mobile: compact horizontal bottom-right (not Hero-primary scale).
+  Tablet (768–1023): same orientation, same compact type.
+  Mobile + Tablet: footer-hide fade (JS attaches below Desktop).
+  Desktop (≥1024): vertical right-edge tab restored; always visible.
 */
 .category-floating-cta {
   position: fixed;
-  top: 50%;
-  right: 0;
+  top: auto;
+  bottom: max(1.25rem, env(safe-area-inset-bottom, 0px)); /* 20px */
+  right: max(1.25rem, env(safe-area-inset-right, 0px)); /* 20px */
+  left: auto;
   z-index: 35;
   display: inline-flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
   justify-content: center;
-  gap: 0.55rem;
+  gap: 0.5rem; /* 8px */
   box-sizing: border-box;
-  width: 2.75rem;
-  padding: 1rem 0.55rem;
-  border-radius: 0.5rem 0 0 0.5rem;
+  width: auto;
+  min-height: 2.5rem; /* 40px — compact vs Hero 48 */
+  padding: 0.5rem 0.875rem; /* 8 × 14 */
+  border-radius: var(--radius-control);
   background: var(--surface-inverse);
   color: #fafafa;
   font-family: var(--font-family-sans);
-  font-size: 0.9375rem;
+  font-size: 0.875rem; /* 14px */
   font-weight: 500;
-  line-height: 1.2;
+  line-height: 1.25rem; /* 20px */
   text-decoration: none;
-  transform: translateY(-50%);
-  transition: background-color 160ms ease;
+  transform: none;
+  transform-origin: center center;
+  transition:
+    transform 160ms ease,
+    background-color 160ms ease,
+    opacity 220ms ease,
+    visibility 220ms ease;
 }
 
 .category-floating-cta:hover {
   background: color-mix(in srgb, var(--surface-inverse) 88%, white);
+}
+
+/* Fade out while Footer occupies the CTA band (Mobile + Tablet via JS). */
+.category-floating-cta.is-obscured-by-footer {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
 }
 
 /* Stack locale strings so outer size follows the longest label. */
@@ -2269,11 +2694,9 @@ a.footer-credit-name:focus-visible {
 }
 
 .category-floating-cta-label {
-  writing-mode: vertical-rl;
-  /* sideways keeps U+2019 with the letters; mixed vertical mode
-     substitutes a punctuation glyph that looks broken after rotate. */
-  text-orientation: sideways;
-  transform: rotate(180deg);
+  writing-mode: horizontal-tb;
+  text-orientation: mixed;
+  transform: none;
   white-space: nowrap;
   text-align: center;
 }
@@ -2282,11 +2705,11 @@ a.footer-credit-name:focus-visible {
   width: 11px;
   height: 8px;
   flex-shrink: 0;
-  transform: rotate(-90deg);
+  transform: none;
 }
 
 /*
-  Tablet (≥768): horizontal control (Hero/primary radius), bottom-right.
+  Tablet (≥768): compact horizontal control; footer-hide (JS tablet-band only).
   Desktop (≥1024) restores the vertical tab — cascade, no max-width:1023.
 */
 @media (min-width: 768px) {
@@ -2294,24 +2717,20 @@ a.footer-credit-name:focus-visible {
     padding-bottom: 7.5rem; /* clearance for bottom CTA */
   }
 
+  html[data-product-deep-link] .category-page {
+    padding-bottom: max(
+      7.5rem,
+      calc(100dvh - var(--header-height) - var(--sticky-nav-height))
+    );
+  }
+
   .category-floating-cta {
-    top: auto;
     bottom: max(2rem, env(safe-area-inset-bottom, 0px)); /* 32px */
     right: max(1.5rem, env(safe-area-inset-right, 0px)); /* 24px */
-    left: auto;
-    flex-direction: row;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    width: auto;
     min-height: 0;
     padding: 0.625rem 1rem; /* 10 × 16 — compact vs Hero primary */
-    border-radius: var(--radius-control); /* same as Hero CTA */
     font-size: 0.875rem; /* 14px */
-    font-weight: 500;
     line-height: 1.25rem; /* 20px */
-    transform: none;
-    transform-origin: center center;
     transition:
       transform 160ms ease,
       background-color 160ms ease,
@@ -2323,28 +2742,18 @@ a.footer-credit-name:focus-visible {
     background: var(--surface-inverse);
     transform: scale(1.02);
   }
-
-  /* Fade out while Footer occupies the CTA band (class set only on Tablet). */
-  .category-floating-cta.is-obscured-by-footer {
-    opacity: 0;
-    visibility: hidden;
-    pointer-events: none;
-  }
-
-  .category-floating-cta-label {
-    writing-mode: horizontal-tb;
-    text-orientation: mixed;
-    transform: none;
-  }
-
-  .category-floating-cta-arrow {
-    transform: none;
-  }
 }
 
 @media (min-width: 1024px) {
   .category-page {
     padding-bottom: 6.5rem;
+  }
+
+  html[data-product-deep-link] .category-page {
+    padding-bottom: max(
+      6.5rem,
+      calc(100dvh - var(--header-height) - var(--sticky-nav-height))
+    );
   }
 
   .category-floating-cta {
@@ -2398,8 +2807,9 @@ a.footer-credit-name:focus-visible {
   z-index: 80;
   display: grid;
   place-items: center;
-  padding: max(1rem, env(safe-area-inset-top)) max(1rem, env(safe-area-inset-right))
-    max(1rem, env(safe-area-inset-bottom)) max(1rem, env(safe-area-inset-left));
+  /* Mobile/Tablet: tighter shell so the photo can fill more of the viewport */
+  padding: max(0.5rem, env(safe-area-inset-top)) max(0.5rem, env(safe-area-inset-right))
+    max(0.5rem, env(safe-area-inset-bottom)) max(0.5rem, env(safe-area-inset-left));
   overscroll-behavior: none;
   touch-action: none;
 }
@@ -2410,7 +2820,7 @@ a.footer-credit-name:focus-visible {
   margin: 0;
   padding: 0;
   border: none;
-  background: rgb(23 23 23 / 0.72);
+  background: rgb(23 23 23 / 0.78);
   cursor: pointer;
 }
 
@@ -2419,9 +2829,9 @@ a.footer-credit-name:focus-visible {
   z-index: 1;
   box-sizing: border-box;
   width: min(46rem, 100%);
-  max-height: min(100dvh - 2rem, 100vh - 2rem);
+  max-height: min(100dvh - 1rem, 100vh - 1rem);
   overflow: hidden;
-  padding: 1.25rem 1.25rem 1rem;
+  padding: 0.75rem 0.65rem 0.75rem;
   border-radius: 10px;
   background: var(--canvas);
   touch-action: manipulation;
@@ -2431,8 +2841,8 @@ a.footer-credit-name:focus-visible {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 1rem;
-  margin-bottom: 1rem;
+  gap: 0.75rem;
+  margin-bottom: 0.65rem;
 }
 
 .product-lightbox-title {
@@ -2467,12 +2877,12 @@ a.footer-credit-name:focus-visible {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   align-items: center;
-  gap: 0.35rem;
+  gap: 0.15rem;
   min-width: 0;
 }
 
 .product-lightbox-viewer.has-nav {
-  grid-template-columns: 2.75rem minmax(0, 1fr) 2.75rem;
+  grid-template-columns: 2.5rem minmax(0, 1fr) 2.5rem;
 }
 
 .product-lightbox-stage {
@@ -2488,7 +2898,9 @@ a.footer-credit-name:focus-visible {
 .product-lightbox-image {
   display: block;
   width: 100%;
-  max-height: min(70dvh, calc(100vh - 14rem));
+  height: auto;
+  /* Fill most of the available shell; keep contain so nothing is cropped */
+  max-height: min(78dvh, calc(100dvh - 7.5rem), calc(100vh - 7.5rem));
   object-fit: contain;
   pointer-events: none;
 }
@@ -2497,7 +2909,7 @@ a.footer-credit-name:focus-visible {
   display: grid;
   place-items: center;
   width: 100%;
-  min-height: 18rem;
+  min-height: min(18rem, 50dvh);
   border-radius: 8px;
   background: var(--product-placeholder-a);
   color: var(--ink-muted);
@@ -2541,19 +2953,19 @@ a.footer-credit-name:focus-visible {
 
 @media (orientation: landscape) and (max-height: 560px) {
   .product-lightbox-panel {
-    padding: 0.75rem 0.75rem 0.65rem;
+    padding: 0.5rem 0.5rem 0.45rem;
   }
 
   .product-lightbox-header {
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.35rem;
   }
 
   .product-lightbox-image {
-    max-height: min(58dvh, calc(100vh - 9rem));
+    max-height: min(72dvh, calc(100dvh - 5.5rem), calc(100vh - 5.5rem));
   }
 
   .product-lightbox-controls {
-    margin-top: 0.5rem;
+    margin-top: 0.35rem;
   }
 }
 
@@ -2562,10 +2974,52 @@ a.footer-credit-name:focus-visible {
   align-items: center;
   justify-content: center;
   gap: 1rem;
-  margin-top: 1rem;
+  margin-top: 0.65rem;
   min-height: 1.25rem;
   color: var(--ink-muted);
   font-size: 0.9375rem;
+}
+
+/* Desktop lightbox — restore the approved roomier chrome */
+@media (min-width: 1024px) {
+  .product-lightbox {
+    padding: max(1rem, env(safe-area-inset-top)) max(1rem, env(safe-area-inset-right))
+      max(1rem, env(safe-area-inset-bottom)) max(1rem, env(safe-area-inset-left));
+  }
+
+  .product-lightbox-backdrop {
+    background: rgb(23 23 23 / 0.72);
+  }
+
+  .product-lightbox-panel {
+    max-height: min(100dvh - 2rem, 100vh - 2rem);
+    padding: 1.25rem 1.25rem 1rem;
+  }
+
+  .product-lightbox-header {
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .product-lightbox-viewer {
+    gap: 0.35rem;
+  }
+
+  .product-lightbox-viewer.has-nav {
+    grid-template-columns: 2.75rem minmax(0, 1fr) 2.75rem;
+  }
+
+  .product-lightbox-image {
+    max-height: min(70dvh, calc(100vh - 14rem));
+  }
+
+  .product-lightbox-placeholder {
+    min-height: 18rem;
+  }
+
+  .product-lightbox-controls {
+    margin-top: 1rem;
+  }
 }
 
 .category-sticky-trigger:focus-visible,
@@ -2603,8 +3057,9 @@ a.footer-credit-name:focus-visible {
 }
 
 /*
-  Contacts — Desktop (Figma 226:2).
-  Intro + contact grid + stores + map + FAQ. Compact footer via route.
+  Contacts — Mobile (Figma 253:2 @390) →
+  Tablet shell (≥768, prior composition) → Desktop dividers (≥1024, 226:2).
+  Intro + contact stack + stores + map + FAQ. Compact footer via route.
 */
 .contacts-page {
   background: var(--canvas);
@@ -2613,77 +3068,55 @@ a.footer-credit-name:focus-visible {
 }
 
 .contacts-intro {
-  padding-top: 3.5rem; /* 56px: heading at 128 under header 72 */
+  padding-top: 2.5rem; /* 40px: H1 @112 under header 72 */
 }
 
 .contacts-heading {
   margin: 0;
   max-width: 31.25rem;
   font-family: var(--font-family-sans);
-  font-size: var(--text-section); /* 38px */
+  font-size: var(--text-section); /* 30px Mobile */
   font-weight: 500;
   line-height: var(--text-section-leading);
   color: var(--ink);
 }
 
 .contacts-lead {
-  margin: 1rem 0 0; /* ~184 − 128 − 44 */
-  max-width: 38.75rem; /* 620px */
+  margin: 0.875rem 0 0; /* ~14px — Figma 160 − 112 − 34.5 */
+  max-width: 38.75rem;
   font-family: var(--font-family-sans);
-  font-size: var(--text-body); /* 19px */
+  font-size: var(--text-body); /* 16px */
   font-weight: 400;
-  line-height: 1.45;
+  line-height: 1.4;
   color: var(--ink-muted);
 }
 
+/* Desktop/Tablet: rule under lead. Mobile: rule after contact stack. */
 .contacts-top-divider {
-  margin-top: 2.25rem; /* ~248 − 184 − lead */
-  height: 1px;
-  background: #e3e3e3;
+  display: none;
 }
 
 .contacts-info {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  align-items: start;
-  column-gap: 0;
-  margin-top: 2.75rem; /* ~292 − 248 */
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 2.125rem; /* ~34px between stacked fields */
+  margin-top: 2.0625rem; /* ~33px after lead → phone @238 */
+  padding-bottom: 1.625rem; /* → divider @584 after socials */
+  border-bottom: 1px solid #e3e3e3;
 }
 
 .contacts-info-item {
   min-width: 0;
-  padding-inline: 0 1.5rem;
+  padding-inline: 0;
 }
 
 .contacts-info-item:not(:first-child) {
-  padding-inline-start: 2.5rem; /* visual gap after vertical rule */
+  padding-inline-start: 0;
 }
 
 .contacts-info-divider {
   display: none;
-}
-
-@media (min-width: 1024px) {
-  .contacts-info {
-    grid-template-columns:
-      minmax(0, 1fr) 1px minmax(0, 1fr) 1px minmax(0, 1fr) 1px minmax(0, 1fr);
-  }
-
-  .contacts-info-divider {
-    display: block;
-    width: 1px;
-    height: 5.25rem; /* 84px */
-    background: #e3e3e3;
-    align-self: center;
-  }
-
-  .contacts-info-item {
-    padding-inline: 0;
-  }
-
-  .contacts-info-item:not(:first-child) {
-    padding-inline-start: 2.5rem;
-  }
 }
 
 .contacts-info-label {
@@ -2691,25 +3124,26 @@ a.footer-credit-name:focus-visible {
   font-family: var(--font-family-sans);
   font-size: 0.9375rem; /* 15px */
   font-weight: 400;
-  line-height: 1.3;
+  line-height: 1.2;
   color: var(--ink-muted);
 }
 
 .contacts-info-value {
   display: inline-block;
-  margin: 0.75rem 0 0; /* ~326 − 292 */
+  margin: 0.625rem 0 0; /* ~10px under label */
   font-family: var(--font-family-sans);
-  font-size: var(--text-nav); /* 19px */
-  font-weight: 500;
-  line-height: 1.3;
+  font-size: 1rem; /* 16px — Figma Mobile */
+  font-weight: 400;
+  line-height: 1.4;
   color: var(--ink);
   text-decoration: none;
   border-radius: 2px;
 }
 
-/* Phone / email links stay single-line; schedule <p> may wrap if needed */
+/* Phone / email may wrap on the narrowest phones */
 a.contacts-info-value {
-  white-space: nowrap;
+  white-space: normal;
+  overflow-wrap: anywhere;
   transition: color 200ms ease;
 }
 
@@ -2726,7 +3160,7 @@ a.contacts-info-value:focus-visible {
 .contacts-socials {
   display: flex;
   align-items: center;
-  gap: 1.5625rem; /* 25px — two messengers */
+  gap: 2rem; /* 32px — Figma 84 − 18 − 34 */
   margin: 0.65rem 0 0;
   padding: 0;
   list-style: none;
@@ -2735,14 +3169,14 @@ a.contacts-info-value:focus-visible {
 .contacts-social {
   display: grid;
   place-items: center;
-  width: 30px;
-  height: 30px;
+  width: 34px;
+  height: 34px;
   border-radius: 2px;
 }
 
 .contacts-social img {
-  width: 30px;
-  height: 30px;
+  width: 34px;
+  height: 34px;
   max-width: none;
   transition: transform 160ms ease;
 }
@@ -2754,7 +3188,7 @@ a.contacts-info-value:focus-visible {
 }
 
 .contacts-stores {
-  margin-top: 6.5rem; /* ~536 − contact block */
+  margin-top: 3.375rem; /* 54px — heading @638 after divider @584 */
 }
 
 .contacts-section-heading {
@@ -2768,63 +3202,58 @@ a.contacts-info-value:focus-visible {
 }
 
 .contacts-stores-divider {
-  margin-top: 1.5rem;
-  height: 1px;
-  background: #e3e3e3;
+  display: none; /* Mobile: no rule under stores H2 */
 }
 
 .contacts-stores-grid {
   position: relative;
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: minmax(0, 1fr);
   column-gap: 0;
-  margin-top: 2.5rem;
+  row-gap: 0;
+  margin-top: 2.125rem; /* ~66px — name @704 under H2 @638 */
 }
 
 .contacts-stores-grid::before {
-  content: "";
-  position: absolute;
-  left: 50%;
-  top: 0;
-  width: 1px;
-  height: 11.875rem; /* 190px */
-  background: #e3e3e3;
-  transform: translateX(-50%);
+  display: none;
 }
 
 .contacts-store {
   min-width: 0;
-  padding-inline-end: 3rem;
+  padding-inline: 0;
 }
 
 .contacts-store--next {
-  padding-inline: 3rem 0;
+  margin-top: 2rem; /* 32px under store-1 route → divider */
+  padding-top: 2.75rem; /* 44px — name @918 after divider @874 */
+  padding-inline: 0;
+  border-top: 1px solid #e3e3e3;
 }
 
 .contacts-store-name {
   margin: 0;
   font-family: var(--font-family-sans);
-  font-size: var(--text-card-title); /* 26px */
+  font-size: var(--text-card-title); /* 21px Mobile */
   font-weight: 500;
-  line-height: 1.3;
+  line-height: 1.18;
   color: var(--ink);
 }
 
 .contacts-store-address {
-  margin: 1rem 0 0;
+  margin: 0.8125rem 0 0; /* ~13px */
   font-family: var(--font-family-sans);
-  font-size: 1.0625rem; /* 17px */
+  font-size: 1rem; /* 16px */
   font-weight: 400;
-  line-height: 1.3;
+  line-height: 1.4;
   color: var(--ink-muted);
 }
 
 .contacts-store-hours {
   margin: 0.75rem 0 0;
   font-family: var(--font-family-sans);
-  font-size: 1.0625rem;
+  font-size: 1rem;
   font-weight: 400;
-  line-height: 1.3;
+  line-height: 1.4;
   color: var(--ink);
 }
 
@@ -2832,11 +3261,11 @@ a.contacts-info-value:focus-visible {
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
-  margin-top: 1.75rem;
+  margin-top: 1.5rem; /* ~24px */
   font-family: var(--font-family-sans);
-  font-size: 1.0625rem;
+  font-size: 1rem; /* 16px */
   font-weight: 500;
-  line-height: 1.3;
+  line-height: 1.25;
   color: var(--ink);
   text-decoration: none;
   border-radius: 2px;
@@ -2849,8 +3278,8 @@ a.contacts-info-value:focus-visible {
 }
 
 .contacts-store-route-icon {
-  width: 24px;
-  height: 24px;
+  width: 20px; /* Figma Mobile pin slot */
+  height: 20px;
   flex-shrink: 0;
 }
 
@@ -2858,8 +3287,8 @@ a.contacts-info-value:focus-visible {
   position: relative;
   box-sizing: border-box;
   width: 100%;
-  height: 26.25rem; /* 420px */
-  margin-top: 3.5rem;
+  height: 15.625rem; /* 250px — Figma Mobile map */
+  margin-top: 2.75rem; /* ~44px after store-2 route */
   overflow: clip;
   border: 1px solid #e3e3e3;
   border-radius: 0;
@@ -2944,41 +3373,47 @@ a.contacts-info-value:focus-visible {
 }
 
 .contacts-faq {
-  margin-top: 7rem; /* ~1408 − map bottom */
+  margin-top: 4.5rem; /* 72px — FAQ @1422 after map @1350 */
 }
 
 .contacts-faq-intro {
-  margin-bottom: 2.5rem;
+  margin-bottom: 1.5rem; /* ~24px → first FAQ rule */
 }
 
 .contacts-faq-lead {
-  margin: 0.75rem 0 0;
+  margin: 0.875rem 0 0;
   max-width: 31.25rem;
   font-family: var(--font-family-sans);
-  font-size: 1.0625rem;
+  font-size: 0.9375rem; /* 15px — Figma Mobile */
   font-weight: 400;
-  line-height: 1.3;
+  line-height: 1.2;
   color: var(--ink-muted);
 }
 
+/* Mobile: single-column divider list (Figma 253:2). Cards restore ≥768. */
 .faq-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  column-gap: 1.5rem; /* 24px: 732 − 72 − 636 */
+  grid-template-columns: minmax(0, 1fr);
+  column-gap: 0;
   align-items: start;
 }
 
 .faq-column {
   display: flex;
   flex-direction: column;
-  gap: 1rem; /* ~16px between closed cards */
+  gap: 0;
   min-width: 0;
 }
 
 .faq-item {
-  background: #f4f4f4;
-  border-radius: 6px;
+  background: transparent;
+  border-radius: 0;
   overflow: clip;
+  border-top: 1px solid #e3e3e3;
+}
+
+.faq-column:last-child .faq-item:last-child {
+  border-bottom: 1px solid #e3e3e3;
 }
 
 .faq-trigger {
@@ -2989,7 +3424,7 @@ a.contacts-info-value:focus-visible {
   width: 100%;
   box-sizing: border-box;
   margin: 0;
-  padding: 1.5rem 1.25rem; /* 24 / 20 */
+  padding: 1.375rem 0; /* 22px — Figma 1534 − 1512 */
   border: none;
   background: transparent;
   color: var(--ink);
@@ -3002,18 +3437,18 @@ a.contacts-info-value:focus-visible {
   flex: 1;
   min-width: 0;
   font-family: var(--font-family-sans);
-  font-size: 1.0625rem; /* 17px */
+  font-size: 1rem; /* 16px */
   font-weight: 500;
-  line-height: 1.25;
+  line-height: 1.35;
 }
 
 .faq-icon {
   flex-shrink: 0;
-  width: 1.25rem;
+  width: 1.375rem;
   text-align: center;
-  font-size: 1.1875rem; /* 19px */
-  font-weight: 500;
-  line-height: 1;
+  font-size: 1.3125rem; /* 21px */
+  font-weight: 400;
+  line-height: 1.18;
 }
 
 .faq-panel {
@@ -3032,18 +3467,18 @@ a.contacts-info-value:focus-visible {
 }
 
 .faq-divider {
-  margin: 0 1.25rem;
+  margin: 0;
   height: 1px;
   background: #e3e3e3;
 }
 
 .faq-answer {
   margin: 0;
-  padding: 1.25rem 1.25rem 1.5rem;
+  padding: 1.375rem 0 1.5rem;
   font-family: var(--font-family-sans);
-  font-size: 1.0625rem;
+  font-size: 0.9375rem; /* 15px */
   font-weight: 400;
-  line-height: 1.55; /* ~26px @ 17 */
+  line-height: 1.533; /* ~23px */
   color: var(--ink-muted);
 }
 
@@ -3062,6 +3497,230 @@ a.contacts-info-value:focus-visible {
   a.contacts-info-value,
   .contacts-store-route {
     transition: none;
+  }
+}
+
+/*
+  Tablet (≥768): restore approved multi-column Contacts composition
+  (same as previous base / Desktop-without-dividers).
+*/
+@media (min-width: 768px) {
+  .contacts-intro {
+    padding-top: 3.5rem; /* 56px: heading at 128 under header */
+  }
+
+  .contacts-lead {
+    margin: 1rem 0 0;
+    line-height: 1.45;
+  }
+
+  .contacts-top-divider {
+    display: block;
+    margin-top: 2.25rem;
+    height: 1px;
+    background: #e3e3e3;
+  }
+
+  .contacts-info {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    align-items: start;
+    column-gap: 0;
+    row-gap: 0;
+    margin-top: 2.75rem;
+    padding-bottom: 0;
+    border-bottom: none;
+  }
+
+  .contacts-info-item {
+    padding-inline: 0 1.5rem;
+  }
+
+  .contacts-info-item:not(:first-child) {
+    padding-inline-start: 2.5rem;
+  }
+
+  .contacts-info-label {
+    line-height: 1.3;
+  }
+
+  .contacts-info-value {
+    margin: 0.75rem 0 0;
+    font-size: var(--text-nav);
+    font-weight: 500;
+    line-height: 1.3;
+  }
+
+  a.contacts-info-value {
+    white-space: nowrap;
+    overflow-wrap: normal;
+  }
+
+  .contacts-socials {
+    gap: 1.5625rem; /* 25px */
+  }
+
+  .contacts-social {
+    width: 30px;
+    height: 30px;
+  }
+
+  .contacts-social img {
+    width: 30px;
+    height: 30px;
+  }
+
+  .contacts-stores {
+    margin-top: 6.5rem;
+  }
+
+  .contacts-stores-divider {
+    display: block;
+    margin-top: 1.5rem;
+    height: 1px;
+    background: #e3e3e3;
+  }
+
+  .contacts-stores-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    margin-top: 2.5rem;
+  }
+
+  .contacts-stores-grid::before {
+    display: block;
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 0;
+    width: 1px;
+    height: 11.875rem; /* 190px */
+    background: #e3e3e3;
+    transform: translateX(-50%);
+  }
+
+  .contacts-store {
+    padding-inline-end: 3rem;
+  }
+
+  .contacts-store--next {
+    margin-top: 0;
+    padding-top: 0;
+    padding-inline: 3rem 0;
+    border-top: none;
+  }
+
+  .contacts-store-name {
+    line-height: 1.3;
+  }
+
+  .contacts-store-address {
+    margin: 1rem 0 0;
+    font-size: 1.0625rem; /* 17px */
+    line-height: 1.3;
+  }
+
+  .contacts-store-hours {
+    margin: 0.75rem 0 0;
+    font-size: 1.0625rem;
+    line-height: 1.3;
+  }
+
+  .contacts-store-route {
+    margin-top: 1.75rem;
+    font-size: 1.0625rem;
+    line-height: 1.3;
+  }
+
+  .contacts-store-route-icon {
+    width: 24px;
+    height: 24px;
+  }
+
+  .stores-map {
+    height: 26.25rem; /* 420px */
+    margin-top: 3.5rem;
+  }
+
+  .contacts-faq {
+    margin-top: 7rem;
+  }
+
+  .contacts-faq-intro {
+    margin-bottom: 2.5rem;
+  }
+
+  .contacts-faq-lead {
+    margin: 0.75rem 0 0;
+    font-size: 1.0625rem;
+    line-height: 1.3;
+  }
+
+  .faq-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 1.5rem;
+  }
+
+  .faq-column {
+    gap: 1rem;
+  }
+
+  .faq-item {
+    background: #f4f4f4;
+    border-radius: 6px;
+    border-top: none;
+  }
+
+  .faq-column:last-child .faq-item:last-child {
+    border-bottom: none;
+  }
+
+  .faq-trigger {
+    padding: 1.5rem 1.25rem;
+  }
+
+  .faq-question {
+    font-size: 1.0625rem;
+    line-height: 1.25;
+  }
+
+  .faq-icon {
+    width: 1.25rem;
+    font-size: 1.1875rem;
+    font-weight: 500;
+    line-height: 1;
+  }
+
+  .faq-divider {
+    margin: 0 1.25rem;
+  }
+
+  .faq-answer {
+    padding: 1.25rem 1.25rem 1.5rem;
+    font-size: 1.0625rem;
+    line-height: 1.55;
+  }
+}
+
+@media (min-width: 1024px) {
+  .contacts-info {
+    grid-template-columns:
+      minmax(0, 1fr) 1px minmax(0, 1fr) 1px minmax(0, 1fr) 1px minmax(0, 1fr);
+  }
+
+  .contacts-info-divider {
+    display: block;
+    width: 1px;
+    height: 5.25rem; /* 84px */
+    background: #e3e3e3;
+    align-self: center;
+  }
+
+  .contacts-info-item {
+    padding-inline: 0;
+  }
+
+  .contacts-info-item:not(:first-child) {
+    padding-inline-start: 2.5rem;
   }
 }
 

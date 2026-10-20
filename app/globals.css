@@ -14,10 +14,8 @@
   --color-divider-inverse: var(--divider-inverse);
 
   /*
-    Fonts — reference next/font CSS variables directly.
-    Do not alias through --font-sans/--font-brand in custom CSS:
-    @theme inline + Tailwind defaults can leave those unresolved
-    and the browser falls back to system UI fonts.
+    Fonts — @fontsource self-hosted families via --font-onest /
+    --font-libre-baskerville on :root (not next/font/google).
   */
   --font-sans: var(--font-onest), ui-sans-serif, system-ui, sans-serif;
   --font-brand: var(--font-libre-baskerville), ui-serif, Georgia, serif;
@@ -36,6 +34,9 @@
 }
 
 :root {
+  /* Family names from @fontsource (self-hosted woff2) */
+  --font-onest: "Onest";
+  --font-libre-baskerville: "Libre Baskerville";
   --font-family-sans: var(--font-onest), ui-sans-serif, system-ui, sans-serif;
   --font-family-brand: var(--font-libre-baskerville), ui-serif, Georgia, serif;
 }

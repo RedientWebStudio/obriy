@@ -36,9 +36,9 @@ export async function CategoryPage({ locale, model }: Props) {
 
   if (!model.assortmentReady) {
     return (
-      <main className="category-page">
+      <main className="category-page category-page--vacant">
         <h1 className="sr-only">{categoryName}</h1>
-        <Container>
+        <Container className="category-page-vacant-inner">
           <CategoryEmptyState
             title={t("unavailable.title")}
             lead={t("unavailable.lead")}

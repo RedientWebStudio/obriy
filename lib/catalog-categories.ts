@@ -1,5 +1,6 @@
 /**
- * Catalog category cards — order matches Figma Catalog Desktop (102:11).
+ * Catalog category cards — order matches Figma Catalog Desktop (102:11)
+ * and Mobile editorial spans (146:2: full @ 1, 4, 7, 12).
  * Each slug routes to the universal `/catalog/[slug]` category page.
  */
 export const catalogCategories = [

@@ -24,6 +24,16 @@ export default async function CatalogCategoryPage({ params }: Props) {
     notFound();
   }
 
+  /* Vacant category (e.g. own-production): fill viewport under Header, Footer at bottom. */
+  if (!model.assortmentReady) {
+    return (
+      <div className="catalog-category-shell catalog-category-shell--vacant">
+        <CategoryPage locale={locale} model={model} />
+        <Footer variant="full" />
+      </div>
+    );
+  }
+
   return (
     <>
       <CategoryPage locale={locale} model={model} />

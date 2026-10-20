@@ -5,8 +5,8 @@
 */
 
 :root {
-  /* Hero height — Desktop polish; mobile/tablet keep simpler band */
-  --hero-height-max: 45rem; /* 720px fallback until desktop MQ */
+  /* Hero height — Mobile Figma 80:7 = 610; Tablet keeps 720 until Desktop */
+  --hero-height-max: 38.125rem; /* 610px */
 
   /* Color */
   --canvas: #efefeb;
@@ -80,6 +80,7 @@
     --header-offset: 64px;
     --sticky-nav-height: 3.5rem; /* 56px */
     --text-logo: 1.625rem; /* 26px */
+    --hero-height-max: 45rem; /* 720px tablet band */
     --grid-gap-advantages: 4.125rem; /* 66px @834: 450 − 64 − 320 */
   }
 }

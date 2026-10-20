@@ -19,8 +19,8 @@ export async function Hero() {
       <div className="hero-tonal" aria-hidden="true" />
 
       {/*
-        Positions match Figma Hero (4:6) absolute tops:
-        eyebrow 168 · title 212 · body 369 · CTA 502 · left = page pad
+        Absolute tops: Mobile Figma 80:7 (100 / 142 / 250 / 354);
+        Tablet/Desktop restore approved anchors in CSS.
       */}
       <div className="hero-content">
         <p className="hero-eyebrow">{t("eyebrow")}</p>
