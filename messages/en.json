@@ -222,5 +222,16 @@
         }
       }
     }
+  },
+  "NotFoundPage": {
+    "code": "404",
+    "title": "Page not found",
+    "description": "The link may be outdated or the page was moved. Return home to continue browsing.",
+    "cta": "Back to home"
+  },
+  "Error": {
+    "title": "Something went wrong",
+    "description": "An error occurred while loading this page. Please try again.",
+    "retry": "Try again"
   }
 }

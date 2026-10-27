@@ -40,3 +40,10 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Local UI audit / screenshot artifacts (not product code)
+/scripts/_*/
+/scripts/_*
+/scripts/*-audit*.mjs
+/scripts/*-probe.mjs
+/scripts/patch-demo-profiles.mjs

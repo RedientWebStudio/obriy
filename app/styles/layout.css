@@ -585,6 +585,7 @@ body:has(.site-header.is-header-hidden) .category-sticky-nav {
   width: max-content;
   min-width: 14.375rem; /* 230px — Figma Primary Button */
   padding: 0 1.5625rem; /* 25px */
+  border: none;
   border-radius: var(--radius-control);
   background: #171717;
   color: var(--on-inverse);
@@ -593,9 +594,44 @@ body:has(.site-header.is-header-hidden) .category-sticky-nav {
   font-weight: 500;
   line-height: 1.2;
   text-decoration: none;
+  cursor: pointer;
   transform: scale(1);
   transform-origin: center;
   transition: transform 160ms ease;
+}
+
+/* 404 / runtime error screens — reuse category-empty rhythm */
+.status-page {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.status-page-inner {
+  margin-block: auto;
+  padding-block: 4rem;
+}
+
+.status-page-brand {
+  margin: 0;
+  font-family: var(--font-family-brand);
+  font-size: var(--text-logo);
+  font-weight: 400;
+  line-height: 1.1;
+  color: var(--ink);
+}
+
+.status-page-code {
+  margin: 0;
+  font-family: var(--font-family-brand);
+  font-size: var(--text-section);
+  font-weight: 400;
+  line-height: var(--text-section-leading);
+  color: var(--brand);
+}
+
+.status-page-action {
+  margin-top: 0.75rem;
 }
 
 .primary-button:hover {

@@ -56,6 +56,14 @@ export function buildLocaleAlternates(locale: string, href: SeoHref) {
   };
 }
 
+/** Shared social preview (`public/123.png`). */
+const SOCIAL_IMAGE = {
+  url: "/123.png",
+  width: 1731,
+  height: 909,
+  alt: "OBRIY",
+} as const;
+
 export function buildPageMetadata(options: {
   locale: string;
   href: SeoHref;
@@ -63,9 +71,26 @@ export function buildPageMetadata(options: {
   description: string;
 }): Metadata {
   const { locale, href, title, description } = options;
+  const path = localizedPath(locale, href);
+
   return {
     title,
     description,
     alternates: buildLocaleAlternates(locale, href),
+    openGraph: {
+      title,
+      description,
+      url: path,
+      siteName: "OBRIY",
+      locale: locale === "uk" ? "uk_UA" : "en_US",
+      type: "website",
+      images: [SOCIAL_IMAGE],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: [SOCIAL_IMAGE.url],
+    },
   };
 }
