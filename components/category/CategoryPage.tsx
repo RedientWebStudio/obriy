@@ -1,5 +1,6 @@
 import { getTranslations } from "next-intl/server";
 import { CategoryEmptyState } from "@/components/category/CategoryEmptyState";
+import { CategoryLocaleScrollPreserve } from "@/components/category/CategoryLocaleScrollPreserve";
 import { FloatingContactCta } from "@/components/category/FloatingContactCta";
 import { StickyCategoryNav } from "@/components/category/StickyCategoryNav";
 import { SubcategorySection } from "@/components/category/SubcategorySection";
@@ -54,6 +55,7 @@ export async function CategoryPage({ locale, model }: Props) {
 
   return (
     <main className="category-page">
+      <CategoryLocaleScrollPreserve locale={locale} />
       <h1 className="sr-only">{categoryName}</h1>
 
       <StickyCategoryNav

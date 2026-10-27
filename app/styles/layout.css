@@ -1,9 +1,10 @@
 /*
   OBRIY layout primitives — container + grid/flex helpers
-  Breakpoints:
-  - < 768px: mobile tokens (pad 20)
-  - ≥ 768px: tablet tokens (pad 32; burger chrome + catalog 2-col; Figma ref 834)
-  - ≥ 1024px: desktop composition (pad 72, full nav; Figma ref 1440)
+  Breakpoints (min-width cascade only):
+  - < 480px: Compact Mobile (pad 20; Figma 390)
+  - ≥ 480px: Wide Mobile (pad 24; proportional mobile layouts)
+  - ≥ 768px: Tablet (pad 32; burger chrome + catalog 2-col; Figma ref 834)
+  - ≥ 1024px: Desktop (pad 72, full nav; Figma ref 1440)
 */
 
 .container {
@@ -744,6 +745,13 @@ body:has(.site-header.is-header-hidden) .category-sticky-nav {
   padding-inline: 1.125rem; /* 18px */
 }
 
+/* Wide Mobile: slightly wider body measure; Compact @390 tops unchanged */
+@media (min-width: 480px) {
+  .hero-body {
+    max-width: min(26.25rem, calc(100% - (2 * var(--page-inline)))); /* 420 */
+  }
+}
+
 /*
   Tablet (≥768): restore approved anchors (eyebrow/title = Desktop tops).
   Body/CTA compact for 36px H1. EN body wraps at UK measure.
@@ -908,6 +916,39 @@ body:has(.site-header.is-header-hidden) .category-sticky-nav {
   min-width: 0;
 }
 
+/* Wide Mobile — before Tablet/Desktop so later min-width rules win */
+@media (min-width: 480px) {
+  .about-advantages {
+    padding-block: 4.5rem 4rem;
+  }
+
+  .about-heading {
+    max-width: 28rem; /* 448 */
+  }
+
+  .about-text {
+    max-width: 28rem;
+  }
+
+  .advantages-heading {
+    max-width: 28rem;
+  }
+
+  .advantages-grid {
+    gap: 2.75rem;
+    max-width: 36rem; /* 576 — coherent column inside shell */
+    margin-inline: auto;
+  }
+
+  .advantage-title {
+    max-width: none;
+  }
+
+  .advantage-text {
+    max-width: none;
+  }
+}
+
 @media (min-width: 768px) {
   .about-advantages {
     padding-block: 5.75rem 16.25rem; /* approved Tablet/Desktop band */
@@ -943,6 +984,7 @@ body:has(.site-header.is-header-hidden) .category-sticky-nav {
   .advantages-grid {
     /* Figma Tablet: 320 + 66 + 320 = 706 — same cluster at 768…1023 */
     width: min(100%, calc(20rem * 2 + 4.125rem));
+    max-width: none; /* clear Wide Mobile column cap */
     margin-inline: auto;
     margin-top: 4.25rem;
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -954,6 +996,7 @@ body:has(.site-header.is-header-hidden) .category-sticky-nav {
 @media (min-width: 1024px) {
   .advantages-grid {
     width: 100%;
+    max-width: none;
     margin-inline: 0;
     grid-template-columns: repeat(4, minmax(0, 1fr));
     column-gap: var(--grid-gap-advantages); /* 72px desktop token */
@@ -1138,6 +1181,30 @@ body:has(.site-header.is-header-hidden) .category-sticky-nav {
   margin-top: 2.5rem; /* 254 − 214 */
 }
 
+/*
+  Wide Mobile Footer: keep Compact wrap (phone | socials, schedule below).
+  A forced 3-col row crushes «Консультація» into phone/icons under ~650.
+  Tablet ≥768 restores the single-row contact track.
+*/
+@media (min-width: 480px) {
+  .footer-top {
+    column-gap: 1rem;
+    row-gap: 1.25rem;
+  }
+
+  .footer-socials {
+    gap: 1.75rem;
+  }
+
+  .footer-bottom {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+}
+
 @media (min-width: 768px) {
   .site-footer {
     padding-block: 2.5rem; /* approved Tablet/Desktop */
@@ -1295,8 +1362,8 @@ a.footer-credit-name:focus-visible {
   position: relative;
   display: block;
   width: 100%;
-  height: 10.25rem; /* 164px — Figma Mobile tiles */
-  aspect-ratio: auto;
+  /* Compact Mobile tiles (Figma 146:2 @390) — fixed height preserves @390 */
+  height: 10.25rem; /* 164px */
   overflow: clip;
   border: 1px solid rgb(23 23 23 / 0.55);
   border-radius: 10px;
@@ -1344,20 +1411,17 @@ a.footer-credit-name:focus-visible {
   }
 }
 
-@media (min-width: 768px) {
-  .catalog-page {
-    padding-bottom: 6.75rem; /* ~108px grid → footer (Figma 1616 − 1508) */
-  }
-
-  .catalog-intro {
-    padding-top: 2.25rem; /* 36px: heading at 108 under header 72 */
-    padding-bottom: 2rem; /* → grid at 208 */
-  }
-
+/*
+  Wide Mobile Catalog: Tablet equal 2-col (6×2), not Compact editorial.
+  Full shell width (--page-inline 24); aspect 377/200 keeps photos/captions
+  balanced without a width freeze. Compact <480 keeps editorial; Tablet ≥768
+  only refines gaps/caption. min-width cascade only.
+*/
+@media (min-width: 480px) {
   .catalog-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     column-gap: 1rem; /* 16px */
-    row-gap: 1.25rem; /* 20px (428 − 208 − 200) */
+    row-gap: 1.125rem; /* 18px — between Compact 16 and Tablet 20 */
   }
 
   .catalog-grid > :nth-child(1),
@@ -1369,12 +1433,52 @@ a.footer-credit-name:focus-visible {
 
   .category-card {
     height: auto;
-    aspect-ratio: 377 / 200; /* Figma Catalog Tablet tiles */
+    aspect-ratio: 377 / 200; /* Tablet tile ratio — photos stay uniform */
+  }
+
+  /*
+    Caption scales with viewport so plaques stay ~20–25% of tile height
+    on narrow Wide Mobile (480–580) without a new breakpoint. height:auto
+    still grows for 2-line uk/en titles.
+  */
+  .category-card-caption {
+    min-height: clamp(1.5rem, 0.15rem + 4vw, 2.25rem); /* 24 → ~33 */
+    padding-block: clamp(0.125rem, 0.05rem + 0.35vw, 0.3125rem);
+    padding-inline: clamp(0.5rem, 0.25rem + 0.85vw, 0.875rem);
+  }
+
+  .category-card-name {
+    font-size: clamp(0.8125rem, 0.6875rem + 0.35vw, 0.9375rem); /* 13 → 15 */
+    line-height: 1.2;
+  }
+}
+
+@media (min-width: 768px) {
+  .catalog-page {
+    padding-bottom: 6.75rem; /* ~108px grid → footer (Figma 1616 − 1508) */
+  }
+
+  .catalog-intro {
+    padding-top: 2.25rem; /* 36px: heading at 108 under header 72 */
+    padding-bottom: 2rem; /* → grid at 208 */
+  }
+
+  .catalog-grid {
+    column-gap: 1rem; /* 16px */
+    row-gap: 1.25rem; /* 20px (428 − 208 − 200) */
+  }
+
+  .category-card {
+    aspect-ratio: 377 / 200; /* Figma Catalog Tablet tiles — equal 2-col */
   }
 
   .category-card-caption {
     min-height: 2.5rem; /* 40px tablet caption bar */
     padding: 0.375rem 0.875rem;
+  }
+
+  .category-card-name {
+    font-size: var(--text-button); /* 15px — clear Wide Mobile clamp */
   }
 }
 
@@ -1396,7 +1500,7 @@ a.footer-credit-name:focus-visible {
 
   .category-card {
     height: auto;
-    aspect-ratio: 400 / 280;
+    aspect-ratio: 400 / 280; /* Figma Catalog Desktop — equal 3-col */
   }
 
   .category-card-caption {
@@ -1489,6 +1593,15 @@ a.footer-credit-name:focus-visible {
   background: var(--canvas);
   color: var(--ink);
   padding-bottom: 7.5rem; /* clearance for bottom-right Mobile CTA */
+}
+
+/* Hide Category briefly while locale scroll is re-pinned (no jump flash). */
+html[data-locale-scroll-hold] {
+  overflow: hidden !important;
+}
+
+html[data-locale-scroll-hold] .category-page {
+  opacity: 0;
 }
 
 /*
@@ -2248,6 +2361,46 @@ html[data-product-deep-link] .category-page {
   margin: 0;
   color: var(--ink);
   font-weight: 400;
+}
+
+/*
+  Wide Mobile Category: centered product column + Compact gallery ratio.
+  Tablet @768 widens to 590 and swaps meta/type. No max-width:767.
+*/
+@media (min-width: 480px) {
+  .category-section-header,
+  .category-product-list .product-card {
+    width: 100%;
+    max-width: min(30rem, 100%); /* 480 — coherent column */
+    margin-inline: auto;
+  }
+
+  .category-product-list {
+    gap: 3rem;
+  }
+
+  .product-card {
+    row-gap: 1.375rem;
+  }
+
+  .product-card-title {
+    font-size: 1.375rem; /* 22px — between Compact 21 and Tablet 23 */
+    line-height: 1.2;
+  }
+
+  .product-card-meta {
+    column-gap: 1.25rem;
+    margin-top: 1.125rem;
+  }
+
+  .product-card-size-block,
+  .product-card-specs {
+    --product-field-width: 14.5rem;
+  }
+
+  .product-card-desc-block {
+    margin-top: 1.125rem;
+  }
 }
 
 /*
@@ -3293,6 +3446,36 @@ a.contacts-info-value:focus-visible {
   border: 1px solid #e3e3e3;
   border-radius: 0;
   background: #f4f4f4;
+}
+
+/* Wide Mobile Contacts: taller map + roomier stack (Tablet restores multi-col) */
+@media (min-width: 480px) {
+  .contacts-intro {
+    padding-top: 2.75rem;
+  }
+
+  .contacts-info {
+    gap: 2.5rem;
+    margin-top: 2.25rem;
+  }
+
+  .contacts-stores {
+    margin-top: 3.75rem;
+  }
+
+  .contacts-stores-grid {
+    margin-top: 2.5rem;
+  }
+
+  .contacts-store--next {
+    margin-top: 2.25rem;
+    padding-top: 2.75rem;
+  }
+
+  .stores-map {
+    height: 18.75rem; /* 300px */
+    margin-top: 3rem;
+  }
 }
 
 .stores-map-canvas {

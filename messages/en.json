@@ -168,6 +168,24 @@
       "cta": "Back to catalog →"
     }
   },
+  "Meta": {
+    "home": {
+      "title": "OBRIY — furniture",
+      "description": "Browse our catalog to explore the assortment and find what fits your needs."
+    },
+    "catalog": {
+      "title": "Catalog | OBRIY",
+      "description": "Choose a furniture category in the OBRIY catalog."
+    },
+    "contacts": {
+      "title": "Contacts | OBRIY",
+      "description": "Get in touch with us or visit one of the OBRIY stores."
+    },
+    "category": {
+      "title": "{name} | OBRIY",
+      "description": "{name} — a furniture category in the OBRIY catalog."
+    }
+  },
   "HomePage": {
     "hero": {
       "imageAlt": "Wooden dresser in a bright interior",

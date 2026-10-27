@@ -1,7 +1,8 @@
 /*
   OBRIY design tokens — values measured from Figma «P2 — OBRIY»
-  Ranges: Mobile 0–767 / Tablet 768–1023 / Desktop ≥1024
-  Figma refs: Desktop 1440 · Tablet 834 · Mobile 390
+  Ranges: Compact Mobile 0–479 · Wide Mobile 480–767 ·
+  Tablet 768–1023 · Desktop ≥1024
+  Figma refs: Desktop 1440 · Tablet 834 · Compact Mobile 390
 */
 
 :root {
@@ -38,7 +39,7 @@
   --header-offset: var(--header-height);
   --sticky-nav-height: 3.25rem; /* 52px */
 
-  /* Layout — mobile-first (Mobile frame) */
+  /* Layout — Compact Mobile-first (Figma 390) */
   --page-inline: 20px;
   --page-max: 1440px;
   /* Desktop content band: 1440 − 72 × 2 */
@@ -69,6 +70,15 @@
 
   /* Grid gaps measured from advantage columns */
   --grid-gap-advantages: 1.5rem;
+}
+
+/* Wide Mobile — shared shell rhythm; section layout lives in layout.css.
+   min-width cascade only (no max-width:767) so 766≡767 vs Tablet @768. */
+@media (min-width: 480px) {
+  :root {
+    --page-inline: 24px;
+    --hero-height-max: 40rem; /* 640px — roomier field on wide phones */
+  }
 }
 
 /* Tablet band from 768 — pad 32; compact chrome vs Desktop.

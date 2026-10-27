@@ -1,9 +1,11 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { setRequestLocale } from "next-intl/server";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import { CategoryPage } from "@/components/category/CategoryPage";
 import { Footer } from "@/components/layout/Footer";
 import { catalogCategories } from "@/lib/catalog-categories";
 import { getCategoryPageModel } from "@/lib/category-page-data";
+import { buildPageMetadata } from "@/lib/seo";
 
 export const instant = false;
 
@@ -13,6 +15,27 @@ type Props = {
 
 export function generateStaticParams() {
   return catalogCategories.map((category) => ({ slug: category.slug }));
+}
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { locale, slug } = await params;
+  setRequestLocale(locale);
+
+  const known = catalogCategories.some((category) => category.slug === slug);
+  if (!known) {
+    return {};
+  }
+
+  const t = await getTranslations({ locale, namespace: "Meta" });
+  const tCatalog = await getTranslations({ locale, namespace: "CatalogPage" });
+  const name = tCatalog(`categories.${slug}.name`);
+
+  return buildPageMetadata({
+    locale,
+    href: { pathname: "/catalog/[slug]", params: { slug } },
+    title: t("category.title", { name }),
+    description: t("category.description", { name }),
+  });
 }
 
 export default async function CatalogCategoryPage({ params }: Props) {
