@@ -1,6 +1,5 @@
 import { getTranslations } from "next-intl/server";
 import { CategoryEmptyState } from "@/components/category/CategoryEmptyState";
-import { CategoryLocaleScrollPreserve } from "@/components/category/CategoryLocaleScrollPreserve";
 import { FloatingContactCta } from "@/components/category/FloatingContactCta";
 import { StickyCategoryNav } from "@/components/category/StickyCategoryNav";
 import { SubcategorySection } from "@/components/category/SubcategorySection";
@@ -53,9 +52,24 @@ export async function CategoryPage({ locale, model }: Props) {
 
   const hasSections = model.sections.length > 0;
 
+  if (!hasSections) {
+    return (
+      <main className="category-page category-page--vacant">
+        <h1 className="sr-only">{categoryName}</h1>
+        <Container className="category-page-vacant-inner">
+          <CategoryEmptyState
+            title={t("empty.title")}
+            lead={t("empty.lead")}
+            cta={t("empty.cta")}
+          />
+        </Container>
+        <FloatingContactCta label={t("floatingCta")} />
+      </main>
+    );
+  }
+
   return (
     <main className="category-page">
-      <CategoryLocaleScrollPreserve locale={locale} />
       <h1 className="sr-only">{categoryName}</h1>
 
       <StickyCategoryNav
@@ -71,23 +85,18 @@ export async function CategoryPage({ locale, model }: Props) {
       />
 
       <Container>
-        {hasSections ? (
-          model.sections.map((section) => (
-            <SubcategorySection
-              key={section.id}
-              section={section}
-              categorySlug={model.slug}
-              locale={locale}
-              productLabels={productLabels}
-            />
-          ))
-        ) : (
-          <CategoryEmptyState
-            title={t("empty.title")}
-            lead={t("empty.lead")}
-            cta={t("empty.cta")}
+        {model.sections.map((section) => (
+          <SubcategorySection
+            key={section.id}
+            section={section}
+            categorySlug={model.slug}
+            locale={locale}
+            productLabels={productLabels}
+            emptySubcategoryMessage={
+              model.usingDemoProducts ? undefined : t("emptySubcategory")
+            }
           />
-        )}
+        ))}
       </Container>
 
       <FloatingContactCta label={t("floatingCta")} />

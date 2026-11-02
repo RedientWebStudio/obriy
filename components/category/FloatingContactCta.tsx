@@ -3,18 +3,10 @@
 import { useEffect, useState } from "react";
 import { Link } from "@/i18n/navigation";
 import { MQ_DESKTOP_MIN } from "@/lib/breakpoints";
-import en from "@/messages/en.json";
-import uk from "@/messages/uk.json";
 
 type Props = {
   label: string;
 };
-
-/** Both locales — outer size follows the longest label, not the active one. */
-const CTA_SIZING_LABELS = [
-  en.CategoryPage.floatingCta,
-  uk.CategoryPage.floatingCta,
-] as const;
 
 /**
  * Shrink the observer root from the bottom by CTA inset + height (+ buffer).
@@ -82,16 +74,7 @@ export function FloatingContactCta({ label }: Props) {
       aria-hidden={obscuredByFooter || undefined}
       tabIndex={obscuredByFooter ? -1 : undefined}
     >
-      <span className="category-floating-cta-label-slot">
-        <span className="category-floating-cta-sizer" aria-hidden="true">
-          {CTA_SIZING_LABELS.map((entry) => (
-            <span key={entry} className="category-floating-cta-label">
-              {entry}
-            </span>
-          ))}
-        </span>
-        <span className="category-floating-cta-label">{label}</span>
-      </span>
+      <span className="category-floating-cta-label">{label}</span>
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src="/icons/cta-arrow.svg"

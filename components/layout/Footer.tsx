@@ -15,7 +15,7 @@ type Props = {
 
 export async function Footer({ variant = "full" }: Props) {
   const t = await getTranslations("Footer");
-  const studioUrl = siteLinks.studio;
+  const rwsUrl = siteLinks.rws;
   const isCompact = variant === "compact";
 
   return (
@@ -69,12 +69,11 @@ export async function Footer({ variant = "full" }: Props) {
           <p className="footer-meta">{t("copyright")}</p>
           <p className="footer-meta footer-credit">
             {t("creditPrefix")}
-            {studioUrl ? (
+            {rwsUrl ? (
               <a
-                href={studioUrl}
+                href={rwsUrl}
                 className="footer-credit-name"
-                target="_blank"
-                rel="noopener noreferrer"
+                {...externalLinkProps(rwsUrl)}
               >
                 {t("creditStudio")}
               </a>

@@ -171,7 +171,7 @@ export function ProductCard({
   };
 
   const shareProduct = async () => {
-    const url = buildProductShareUrl(locale, categorySlug, anchorId);
+    const url = buildProductShareUrl(categorySlug, anchorId);
     const outcome = await tryWebShare(url, title);
     // Shared OK, or user dismissed the sheet — never auto-copy after AbortError.
     if (outcome === "shared" || outcome === "abort") return;

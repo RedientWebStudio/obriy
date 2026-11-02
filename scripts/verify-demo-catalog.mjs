@@ -1,7 +1,12 @@
 /**
  * Quick audit: every ready category has 4 products per subcategory (+ sale).
- * Requires `npm run dev`. Run: node scripts/verify-demo-catalog.mjs
+ * Requires `npm run dev` and DEMO_CATALOG=true.
+ * Run: DEMO_CATALOG=true node scripts/verify-demo-catalog.mjs
  */
+if (process.env.DEMO_CATALOG?.trim().toLowerCase() !== "true") {
+  console.error("Set DEMO_CATALOG=true to run demo catalog checks.");
+  process.exit(2);
+}
 const categories = [
   "beds",
   "mattresses",
@@ -78,8 +83,23 @@ for (const slug of categories) {
 }
 
 const own = await fetchText("/catalog/own-production");
-const ownOk = own.includes("уточнюється") || own.includes("власного виробництва");
-console.log(`${ownOk ? "OK" : "FAIL"} own-production unavailable state`);
+const ownCards = (own.match(/class="product-card"/g) || []).length;
+const ownExpected = 4; /* one subcategory only — no sale section */
+const ownHeadings = [
+  ...own.matchAll(/category-section-heading">([^<]+)/g),
+].map((match) => match[1]);
+const ownOk =
+  own.includes("Ліжка з натурального дерева") &&
+  own.includes("own-production--natural-wood-beds") &&
+  !own.includes("category-page--vacant") &&
+  ownCards === ownExpected &&
+  ownHeadings.length === 1 &&
+  ownHeadings[0] === "Ліжка з натурального дерева" &&
+  !own.includes(">Розпродаж<") &&
+  !own.includes("Nova");
+console.log(
+  `${ownOk ? "OK" : "FAIL"} own-production demo placeholders cards=${ownCards} expected=${ownExpected} no-sale`,
+);
 if (!ownOk) failed += 1;
 
 const chairs = await fetchText("/catalog/chairs");

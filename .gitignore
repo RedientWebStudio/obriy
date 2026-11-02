@@ -20,6 +20,12 @@
 # production
 /build
 
+# Standalone Sanity Studio build output (`npm run studio:build`)
+/dist
+
+# Sanity CLI / Studio local cache
+.sanity/
+
 # misc
 .DS_Store
 *.pem

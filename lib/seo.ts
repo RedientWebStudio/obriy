@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import { getPathname } from "@/i18n/navigation";
-import { routing } from "@/i18n/routing";
 
-/** App pathnames used for SEO (canonical / hreflang / sitemap). */
+/** App pathnames used for SEO (canonical / sitemap). */
 export type SeoHref =
   | "/"
   | "/catalog"
@@ -36,24 +35,21 @@ export function absoluteUrl(pathname: string): string {
   return new URL(path, base).href;
 }
 
-export function localizedPath(locale: string, href: SeoHref): string {
-  return getPathname({ locale, href });
-}
-
-/** Canonical + hreflang map for the current locale page. */
-export function buildLocaleAlternates(locale: string, href: SeoHref) {
-  const canonical = localizedPath(locale, href);
-  const languages: Record<string, string> = {};
-
-  for (const loc of routing.locales) {
-    languages[loc] = localizedPath(loc, href);
+/**
+ * Path for the single Ukrainian locale (no `/uk` prefix).
+ * Dynamic `/catalog/[slug]` is resolved explicitly — next-intl getPathname
+ * leaves the `[slug]` token intact without a pathnames map.
+ */
+export function pagePath(href: SeoHref): string {
+  if (typeof href !== "string" && href.pathname === "/catalog/[slug]") {
+    const slug = href.params.slug?.trim();
+    if (!slug || slug.includes("/") || slug.includes("[")) {
+      throw new Error(`Invalid catalog slug for SEO path: ${href.params.slug}`);
+    }
+    return `/catalog/${slug}`;
   }
-  languages["x-default"] = languages[routing.defaultLocale];
 
-  return {
-    canonical,
-    languages,
-  };
+  return getPathname({ locale: "uk", href });
 }
 
 /** Shared social preview (`public/123.png`). */
@@ -65,24 +61,25 @@ const SOCIAL_IMAGE = {
 } as const;
 
 export function buildPageMetadata(options: {
-  locale: string;
   href: SeoHref;
   title: string;
   description: string;
 }): Metadata {
-  const { locale, href, title, description } = options;
-  const path = localizedPath(locale, href);
+  const { href, title, description } = options;
+  const path = pagePath(href);
 
   return {
     title,
     description,
-    alternates: buildLocaleAlternates(locale, href),
+    alternates: {
+      canonical: path,
+    },
     openGraph: {
       title,
       description,
       url: path,
       siteName: "OBRIY",
-      locale: locale === "uk" ? "uk_UA" : "en_US",
+      locale: "uk_UA",
       type: "website",
       images: [SOCIAL_IMAGE],
     },

@@ -1,30 +1,39 @@
-import { defineField, defineType } from "sanity";
+import { defineField, defineType, type Reference } from "sanity";
+import { ProductSubcategoryInput } from "./productSubcategoryInput";
 
 const PRODUCT_DESCRIPTION_MAX = 250;
+const STUDIO_API_VERSION =
+  process.env.SANITY_STUDIO_API_VERSION ||
+  process.env.NEXT_PUBLIC_SANITY_API_VERSION ||
+  "2025-08-19";
 
 type ProductDescriptionValue = {
   uk?: string;
   en?: string;
 } | null;
 
+type RefLike = { _ref?: string } | null | undefined;
+
 /** Character limit for product.description only — not shared localeText. */
 export function validateProductDescription(
   value: ProductDescriptionValue | undefined,
 ): true | string {
   const uk = typeof value?.uk === "string" ? value.uk : "";
-  const en = typeof value?.en === "string" ? value.en : "";
-  const tooLong: string[] = [];
 
-  if (uk.length > PRODUCT_DESCRIPTION_MAX) {
-    tooLong.push(`Ukrainian is ${uk.length} characters`);
-  }
-  if (en.length > PRODUCT_DESCRIPTION_MAX) {
-    tooLong.push(`English is ${en.length} characters`);
-  }
+  if (uk.length <= PRODUCT_DESCRIPTION_MAX) return true;
 
-  if (tooLong.length === 0) return true;
+  return `Опис має містити не більше ${PRODUCT_DESCRIPTION_MAX} символів з пробілами. Зараз: ${uk.length}.`;
+}
 
-  return `Description must be ${PRODUCT_DESCRIPTION_MAX} characters or fewer, including spaces. ${tooLong.join(". ")}.`;
+function referenceIds(ref: string): string[] {
+  const published = ref.replace(/^drafts\./, "");
+  return [published, `drafts.${published}`];
+}
+
+function categoryRefFromDocument(document: unknown): string | null {
+  if (!document || typeof document !== "object") return null;
+  const category = (document as { category?: RefLike }).category;
+  return typeof category?._ref === "string" ? category._ref : null;
 }
 
 export const product = defineType({
@@ -61,8 +70,66 @@ export const product = defineType({
       type: "reference",
       to: [{ type: "subcategory" }],
       description:
-        "Regular subcategory placement. Leave empty when the product belongs only to Sale.",
+        "Select a Category first. Shows only subcategories of that category. Leave empty when the product belongs only to Sale.",
       hidden: ({ document }) => Boolean(document?.inSaleSection),
+      readOnly: ({ document }) => !categoryRefFromDocument(document),
+      components: {
+        input: ProductSubcategoryInput,
+      },
+      options: {
+        filter: ({ document }) => {
+          const categoryId = categoryRefFromDocument(document);
+          if (!categoryId) {
+            return {
+              filter: "_id in $none",
+              params: { none: [] as string[] },
+            };
+          }
+
+          return {
+            filter: "category._ref in $categoryIds",
+            params: {
+              categoryIds: referenceIds(categoryId),
+            },
+          };
+        },
+      },
+      validation: (rule) =>
+        rule.custom(async (value, context) => {
+          const reference = value as Reference | undefined;
+          const subcategoryId =
+            typeof reference?._ref === "string" ? reference._ref : null;
+
+          // Sale products may omit subcategory; empty is always allowed.
+          if (!subcategoryId) return true;
+
+          const categoryId = categoryRefFromDocument(context.document);
+          if (!categoryId) {
+            return "Select a Category before choosing a Subcategory.";
+          }
+
+          const getClient = context.getClient;
+          if (typeof getClient !== "function") {
+            return "Unable to validate Subcategory against Category.";
+          }
+
+          const client = getClient({ apiVersion: STUDIO_API_VERSION });
+          const matches = await client.fetch<number>(
+            `count(*[
+              _type == "subcategory" &&
+              _id in $subcategoryIds &&
+              category._ref in $categoryIds
+            ])`,
+            {
+              subcategoryIds: referenceIds(subcategoryId),
+              categoryIds: referenceIds(categoryId),
+            },
+          );
+
+          if (matches > 0) return true;
+
+          return "Subcategory must belong to the selected Category.";
+        }),
     }),
     defineField({
       name: "inSaleSection",
@@ -118,6 +185,9 @@ export const product = defineType({
       deprecated: {
         reason: "Use variant.compareAtPrice instead",
       },
+      // Hidden from editors; field retained so existing documents keep data
+      // and catalog fallback (product.compareAtPrice) still works.
+      hidden: true,
     }),
     defineField({
       name: "order",

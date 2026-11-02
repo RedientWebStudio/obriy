@@ -3,11 +3,8 @@
 import { useEffect, useRef, useState } from "react";
 import type { StoreLocation } from "@/lib/stores";
 import { MQ_DESKTOP_MIN } from "@/lib/breakpoints";
-import { pickLocale } from "@/lib/locale";
-
 type Props = {
   stores: StoreLocation[];
-  locale: string;
   label: string;
 };
 
@@ -39,7 +36,7 @@ function shouldUseCooperativeTouch(): boolean {
   );
 }
 
-export function StoresMap({ stores, locale, label }: Props) {
+export function StoresMap({ stores, label }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [failed, setFailed] = useState(false);
 
@@ -97,11 +94,11 @@ export function StoresMap({ stores, locale, label }: Props) {
 
           L.marker([store.coordinates.lat, store.coordinates.lng], {
             icon: markerIcon,
-            title: pickLocale(store.name, locale),
+            title: store.name,
           })
             .addTo(map!)
             .bindPopup(
-              `<strong>${pickLocale(store.name, locale)}</strong><br/>${pickLocale(store.address, locale)}`,
+              `<strong>${store.name}</strong><br/>${store.address}`,
               { className: "stores-map-popup" },
             );
         });
@@ -204,7 +201,7 @@ export function StoresMap({ stores, locale, label }: Props) {
         map = null;
       }
     };
-  }, [stores, locale]);
+  }, [stores]);
 
   if (stores.length === 0 || failed) {
     return (

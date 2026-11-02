@@ -12,7 +12,9 @@ for (const path of paths) {
   const html = await res.text();
   const cards = (html.match(/class="product-card"/g) || []).length;
   const emptyUi = html.includes('class="category-empty"');
-  const ok = res.ok && (path.includes("own-production") ? emptyUi : cards > 0 && !emptyUi);
+  const ok = res.ok && (path.includes("own-production")
+    ? cards >= 8 && !emptyUi
+    : cards > 0 && !emptyUi);
   console.log(`${ok ? "OK" : "FAIL"} ${path}: status=${res.status} cards=${cards}`);
   if (!ok) failed += 1;
 }

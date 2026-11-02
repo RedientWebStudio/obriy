@@ -31,7 +31,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const name = tCatalog(`categories.${slug}.name`);
 
   return buildPageMetadata({
-    locale,
     href: { pathname: "/catalog/[slug]", params: { slug } },
     title: t("category.title", { name }),
     description: t("category.description", { name }),
@@ -47,20 +46,17 @@ export default async function CatalogCategoryPage({ params }: Props) {
     notFound();
   }
 
-  /* Vacant category (e.g. own-production): fill viewport under Header, Footer at bottom. */
-  if (!model.assortmentReady) {
-    return (
-      <div className="catalog-category-shell catalog-category-shell--vacant">
-        <CategoryPage locale={locale} model={model} />
-        <Footer variant="full" />
-      </div>
-    );
-  }
+  /* Vacant shell centers CategoryEmptyState; ready shell keeps Footer at bottom. */
+  const useVacantShell =
+    !model.assortmentReady || model.sections.length === 0;
+  const shellClassName = useVacantShell
+    ? "catalog-category-shell catalog-category-shell--vacant"
+    : "catalog-category-shell";
 
   return (
-    <>
+    <div className={shellClassName}>
       <CategoryPage locale={locale} model={model} />
       <Footer variant="full" />
-    </>
+    </div>
   );
 }

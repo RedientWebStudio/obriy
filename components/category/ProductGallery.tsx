@@ -173,6 +173,13 @@ export function ProductGallery({
         className="product-card-media-image"
         loading="lazy"
         draggable={false}
+        /*
+          Sanity CDN URLs are already sized via urlFor(). Skipping the Next
+          optimizer also avoids a Next 16 SSRF false-positive on this host
+          (cdn.sanity.io → NAT64 "private" IP), which left the card blank
+          while the lightbox <img> still worked.
+        */
+        unoptimized
       />
     ) : (
       <div

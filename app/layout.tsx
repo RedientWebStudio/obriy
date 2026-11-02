@@ -13,8 +13,9 @@ type Props = {
 
 /**
  * Pass-through root: `<html>` / `<body>` live in `app/[locale]/layout.tsx`
- * (locale `lang`) and `app/studio/layout.tsx` (admin). Avoids nesting and
- * keeps `getLocale()` out of the root so `/_not-found` can prerender.
+ * (locale `lang`) and `app/studio/layout.tsx` (Studio redirect shell).
+ * Avoids nesting and keeps `getLocale()` out of the root so `/_not-found`
+ * can prerender.
  */
 export const metadata: Metadata = {
   metadataBase: getSiteOrigin(),

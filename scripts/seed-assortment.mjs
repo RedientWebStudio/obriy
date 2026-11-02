@@ -40,7 +40,16 @@ const assortment = [
       en: "Own production of wooden furniture",
     },
     order: 0,
-    subcategories: [],
+    subcategories: [
+      {
+        slug: "natural-wood-beds",
+        title: {
+          uk: "Ліжка з натурального дерева",
+          en: "Natural wood beds",
+        },
+        order: 1,
+      },
+    ],
   },
   {
     slug: "beds",

@@ -5,11 +5,7 @@ import { StoresSection } from "@/components/contacts/StoresSection";
 import { Container } from "@/components/layout/Container";
 import { faqItemIds } from "@/lib/faq";
 
-type Props = {
-  locale: string;
-};
-
-export async function ContactsPage({ locale }: Props) {
+export async function ContactsPage() {
   const t = await getTranslations("ContactsPage");
   const tFooter = await getTranslations("Footer");
 
@@ -49,7 +45,6 @@ export async function ContactsPage({ locale }: Props) {
         />
 
         <StoresSection
-          locale={locale}
           heading={t("stores.heading")}
           routeLabel={t("stores.route")}
           mapLabel={t("stores.mapLabel")}

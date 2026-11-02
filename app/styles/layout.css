@@ -1863,14 +1863,28 @@ html[data-product-deep-link] .category-page {
   gap: 0.75rem 1rem;
 }
 
+.category-section-empty {
+  margin: 0.75rem 0 0;
+  max-width: 36rem; /* reading measure; column width still comes from header */
+  min-width: 0;
+  font-family: var(--font-family-sans);
+  font-size: 0.9375rem; /* 15px — secondary body */
+  font-weight: 400;
+  line-height: 1.45;
+  color: var(--ink-muted);
+  overflow-wrap: break-word;
+}
+
 .category-section-heading {
   margin: 0;
   max-width: 43.75rem; /* 700px */
+  min-width: 0;
   font-family: var(--font-family-sans);
   font-size: var(--text-section); /* 38px */
   font-weight: 500;
   line-height: var(--text-section-leading);
   color: var(--ink);
+  overflow-wrap: break-word;
   /* Native hash / scrollIntoView — JS overrides when Header state differs */
   scroll-margin-top: calc(var(--header-offset, var(--header-height)) + var(--sticky-nav-height));
 }
@@ -2411,6 +2425,12 @@ html[data-product-deep-link] .category-page {
     margin-inline: auto;
   }
 
+  /* Match vacant empty copy to the same centered content column as cards */
+  .catalog-category-shell--vacant .category-empty {
+    max-width: min(30rem, 100%);
+    margin-inline: auto;
+  }
+
   .category-product-list {
     gap: 3rem;
   }
@@ -2511,6 +2531,11 @@ html[data-product-deep-link] .category-page {
   .category-product-list .product-card {
     width: 100%;
     max-width: min(36.875rem, 100%); /* 590 — media measure */
+    margin-inline: auto;
+  }
+
+  .catalog-category-shell--vacant .category-empty {
+    max-width: min(36.875rem, 100%); /* same Tablet column as cards */
     margin-inline: auto;
   }
 
@@ -2641,6 +2666,11 @@ html[data-product-deep-link] .category-page {
     margin-inline: 0;
   }
 
+  .catalog-category-shell--vacant .category-empty {
+    max-width: 36rem;
+    margin-inline: 0; /* Desktop: share content start with cards */
+  }
+
   .category-section-header {
     margin-bottom: 2.5rem;
   }
@@ -2685,8 +2715,8 @@ html[data-product-deep-link] .category-page {
     font-size: 0.9375rem;
   }
 
-  .product-card-size-block,
-  .product-card-specs {
+  /* Size control stays on the narrow field band; Specs use the info column. */
+  .product-card-size-block {
     --product-field-width: 13.125rem;
   }
 
@@ -2720,6 +2750,8 @@ html[data-product-deep-link] .category-page {
   }
 
   .product-card-specs {
+    width: 100%;
+    max-width: none;
     margin-top: 1.75rem;
   }
 
@@ -2728,16 +2760,21 @@ html[data-product-deep-link] .category-page {
   }
 
   .product-card-spec-row {
+    grid-template-columns: minmax(9rem, 12.5rem) minmax(0, 1fr);
+    column-gap: 1.5rem;
     font-size: 0.9375rem;
+  }
+
+  .product-card-spec-row dd {
+    overflow-wrap: break-word;
   }
 }
 
 /*
-  Vacant category shell (assortment not ready — own-production).
-  Fills the viewport under Header; Footer stays at the bottom on short pages.
-  Does not affect ready categories with product sections.
+  Category page shell — fills the viewport under Header so Footer sits at the
+  bottom on short pages (empty / few products). Used for vacant and ready states.
 */
-.catalog-category-shell--vacant {
+.catalog-category-shell {
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
@@ -2745,8 +2782,11 @@ html[data-product-deep-link] .category-page {
   min-height: calc(100dvh - var(--header-height));
 }
 
-.catalog-category-shell--vacant .category-page--vacant {
+.catalog-category-shell > .category-page {
   flex: 1 1 auto;
+}
+
+.catalog-category-shell--vacant .category-page--vacant {
   display: flex;
   flex-direction: column;
   min-height: 0;
@@ -2765,9 +2805,11 @@ html[data-product-deep-link] .category-page {
 .catalog-category-shell--vacant .category-empty {
   /* Vertical balance via auto margins; collapses cleanly when content overflows */
   margin-block: auto;
-  margin-inline: auto;
+  margin-inline: 0;
   width: 100%;
+  max-width: 100%;
   padding-block: 2.5rem;
+  box-sizing: border-box;
 }
 
 .category-empty {
@@ -2777,22 +2819,28 @@ html[data-product-deep-link] .category-page {
   gap: 0.75rem;
   padding: 5rem 0 4rem;
   max-width: 36rem;
+  min-width: 0;
+  box-sizing: border-box;
 }
 
 .category-empty-title {
   margin: 0;
+  max-width: 100%;
   font-family: var(--font-family-sans);
   font-size: var(--text-section);
   font-weight: 500;
   line-height: var(--text-section-leading);
   color: var(--ink);
+  overflow-wrap: break-word;
 }
 
 .category-empty-lead {
   margin: 0;
+  max-width: 100%;
   font-size: 1.0625rem;
   line-height: 1.45;
   color: var(--ink-muted);
+  overflow-wrap: break-word;
 }
 
 .category-empty-link {

@@ -25,7 +25,7 @@ export default async function LocaleLayout({ children, params }: Props) {
   const messages = await getMessages();
 
   return (
-    <html lang={locale} className="h-full antialiased" suppressHydrationWarning>
+    <html lang="uk" className="h-full antialiased" suppressHydrationWarning>
       {/* Sync head boot — must run before `#product-…` nodes are parsed.
           suppressHydrationWarning: boot may set data-product-* / overflow on
           <html> before React hydrates (same pattern as theme scripts). */}

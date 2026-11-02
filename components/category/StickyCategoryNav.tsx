@@ -16,7 +16,6 @@ import {
   releaseProductHashHold,
   setProductDeepLinkActive,
 } from "@/lib/product-hash-boot";
-import { hasPendingLocaleScrollRestore } from "@/lib/locale-scroll-preserve";
 import { readProductDeepLinkId } from "@/lib/product-share-url";
 
 type Props = {
@@ -498,14 +497,6 @@ export function StickyCategoryNav({
      * Product Share links may arrive as `#product-…` and/or `?product=`.
      */
     const runColdHash = async () => {
-      // Locale switch already captured a viewport anchor — do not scrollTo(0)
-      // / re-run deep-link settle (that fights CategoryLocaleScrollPreserve).
-      if (hasPendingLocaleScrollRestore()) {
-        setProductDeepLinkActive(false);
-        releaseProductHashHold();
-        return;
-      }
-
       const productId = readProductDeepLinkId();
       const rawHash = window.location.hash;
       const sectionId =
@@ -576,9 +567,7 @@ export function StickyCategoryNav({
       scrollToHashTarget(target);
     };
 
-    if (!hasPendingLocaleScrollRestore()) {
-      setProductDeepLinkActive(Boolean(readProductDeepLinkId()));
-    }
+    setProductDeepLinkActive(Boolean(readProductDeepLinkId()));
     void runColdHash();
 
     const onHashChange = () => {

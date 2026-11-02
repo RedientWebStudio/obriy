@@ -17,7 +17,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const t = await getTranslations({ locale, namespace: "Meta" });
 
   return buildPageMetadata({
-    locale,
     href: "/",
     title: t("home.title"),
     description: t("home.description"),

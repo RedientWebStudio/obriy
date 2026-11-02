@@ -10,7 +10,7 @@ const withNextIntl = createNextIntlPlugin("./i18n/request.ts");
  * Update the IP when DHCP reassigns it (see terminal warning).
  */
 const lanDevOrigins = [
-  "10.127.45.173",
+  "10.225.244.173",
   ...(process.env.ALLOWED_DEV_ORIGINS?.split(/[\s,]+/).filter(Boolean) ?? []),
 ];
 
@@ -43,6 +43,7 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+
   turbopack: {
     rules: {
       "*.css": {

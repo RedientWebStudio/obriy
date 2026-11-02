@@ -1,7 +1,8 @@
 import { defineRouting } from "next-intl/routing";
 
+/** Single-locale site: Ukrainian only, no URL prefix. */
 export const routing = defineRouting({
-  locales: ["uk", "en"],
+  locales: ["uk"],
   defaultLocale: "uk",
-  localePrefix: "as-needed",
+  localePrefix: "never",
 });

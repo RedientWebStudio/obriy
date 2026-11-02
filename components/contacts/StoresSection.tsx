@@ -1,20 +1,13 @@
 import { StoresMap } from "@/components/contacts/StoresMap";
-import { pickLocale } from "@/lib/locale";
 import { storeDirectionsUrl, stores } from "@/lib/stores";
 
 type Props = {
-  locale: string;
   heading: string;
   routeLabel: string;
   mapLabel: string;
 };
 
-export function StoresSection({
-  locale,
-  heading,
-  routeLabel,
-  mapLabel,
-}: Props) {
+export function StoresSection({ heading, routeLabel, mapLabel }: Props) {
   return (
     <section className="contacts-stores" aria-labelledby="stores-heading">
       <h2 id="stores-heading" className="contacts-section-heading">
@@ -32,15 +25,9 @@ export function StoresSection({
                 : "contacts-store contacts-store--next"
             }
           >
-            <h3 className="contacts-store-name">
-              {pickLocale(store.name, locale)}
-            </h3>
-            <p className="contacts-store-address">
-              {pickLocale(store.address, locale)}
-            </p>
-            <p className="contacts-store-hours">
-              {pickLocale(store.hours, locale)}
-            </p>
+            <h3 className="contacts-store-name">{store.name}</h3>
+            <p className="contacts-store-address">{store.address}</p>
+            <p className="contacts-store-hours">{store.hours}</p>
             <a
               href={storeDirectionsUrl(store)}
               className="contacts-store-route"
@@ -62,9 +49,10 @@ export function StoresSection({
       </div>
 
       <StoresMap
-        key={stores.map((s) => `${s.id}:${s.coordinates.lat},${s.coordinates.lng}`).join("|")}
+        key={stores
+          .map((s) => `${s.id}:${s.coordinates.lat},${s.coordinates.lng}`)
+          .join("|")}
         stores={stores}
-        locale={locale}
         label={mapLabel}
       />
     </section>

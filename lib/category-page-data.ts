@@ -1,6 +1,7 @@
 import "server-only";
 
 import {
+  categorySupportsSaleSection,
   getAssortmentCategory,
   SALE_SECTION_ID,
   saleSectionTitle,
@@ -14,7 +15,7 @@ import type {
 } from "@/lib/category-types";
 import { isDemoCatalogEnabled } from "@/lib/demo/demo-config";
 import { getDemoProductsForCategory } from "@/lib/demo/generate-catalog";
-import type { LocaleField } from "@/lib/locale";
+import { ukText } from "@/lib/locale";
 import { client } from "@/sanity/lib/client";
 import { urlFor } from "@/sanity/lib/image";
 import { PRODUCTS_BY_CATEGORY_QUERY } from "@/sanity/lib/queries";
@@ -45,11 +46,8 @@ type SanityProduct = {
   order?: number | null;
 };
 
-function toLocaleField(value: SanityLocale, fallback = ""): LocaleField {
-  return {
-    uk: value?.uk?.trim() || fallback,
-    en: value?.en?.trim() || value?.uk?.trim() || fallback,
-  };
+function toLocaleField(value: SanityLocale, fallback = ""): string {
+  return ukText(value, fallback);
 }
 
 function mapSanityProduct(product: SanityProduct): CategoryProduct | null {
@@ -180,12 +178,15 @@ function buildSections(
   const category = getAssortmentCategory(categorySlug);
   if (!category) return [];
 
+  const allowSale = categorySupportsSaleSection(category);
   const regular = products
     .filter((product) => !product.inSaleSection)
     .sort((a, b) => a.order - b.order);
-  const sale = products
-    .filter((product) => product.inSaleSection)
-    .sort((a, b) => a.order - b.order);
+  const sale = allowSale
+    ? products
+        .filter((product) => product.inSaleSection)
+        .sort((a, b) => a.order - b.order)
+    : [];
 
   const sections: CategorySection[] = [];
 
@@ -193,9 +194,8 @@ function buildSections(
     const sectionProducts = regular.filter(
       (product) => product.subcategorySlug === sub.slug,
     );
-    // Dynamic count — render whatever data provides (no .slice cap).
-    if (sectionProducts.length === 0) continue;
-
+    // Always render the section (even with zero products) so sticky-nav
+    // hash targets exist and empty-subcategory transitions still scroll.
     sections.push({
       id: subcategoryAnchor(categorySlug, sub.slug),
       title: sub.title,
@@ -237,9 +237,19 @@ export async function getCategoryPageModel(
   let usingDemoProducts = false;
 
   try {
-    const sanityProducts = (await client.fetch(PRODUCTS_BY_CATEGORY_QUERY, {
-      categorySlug: slug,
-    })) as SanityProduct[];
+    /*
+      Fresh API reads + short ISR: newly published products (e.g. after NEO)
+      must appear without a redeploy. useCdn:false avoids Sanity CDN lag;
+      revalidate busts the Next.js Data Cache on a timer.
+    */
+    const sanityProducts = (await client.fetch(
+      PRODUCTS_BY_CATEGORY_QUERY,
+      { categorySlug: slug },
+      {
+        useCdn: false,
+        next: { revalidate: 30 },
+      },
+    )) as SanityProduct[];
 
     products = sanityProducts
       .map((product) => mapSanityProduct(product))
@@ -250,12 +260,24 @@ export async function getCategoryPageModel(
 
   /*
     Sanity-first: use CMS products when present.
-    Demo fallback only when the category has zero published products and
-    DEMO_CATALOG is enabled. Never mix sources inside one category.
+    Demo fallback only when DEMO_CATALOG is explicitly enabled and the
+    category has zero published products. Never mix sources in one category.
+    With demo off and zero products, return no sections → CategoryEmptyState.
   */
   if (products.length === 0 && isDemoCatalogEnabled()) {
     products = getDemoProductsForCategory(slug);
     usingDemoProducts = products.length > 0;
+  }
+
+  if (products.length === 0) {
+    return {
+      slug: category.slug,
+      title: category.title,
+      assortmentReady: true,
+      nav: [],
+      sections: [],
+      usingDemoProducts: false,
+    };
   }
 
   const sections = buildSections(slug, products);

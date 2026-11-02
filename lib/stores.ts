@@ -1,12 +1,10 @@
-import type { LocaleField } from "@/lib/locale";
-
 export type StoreLocation = {
   id: string;
-  name: LocaleField;
-  address: LocaleField;
+  name: string;
+  address: string;
   /** Address string used for maps / directions search */
   addressQuery: string;
-  hours: LocaleField;
+  hours: string;
   /** Confirmed store coordinates (WGS84). */
   coordinates: {
     lat: number;
@@ -26,32 +24,20 @@ export type StoreLocation = {
 export const stores: StoreLocation[] = [
   {
     id: "mukachevo-margitycha",
-    name: { uk: "Магазин OBRIY", en: "OBRIY store" },
-    address: {
-      uk: "м. Мукачево, вул. І. Маргітича 4",
-      en: "Mukachevo, I. Margitycha St. 4",
-    },
+    name: "Магазин OBRIY",
+    address: "м. Мукачево, вул. І. Маргітича 4",
     addressQuery: "Мукачево, вул. І. Маргітича 4",
-    hours: {
-      uk: "Пн–Сб · 9:00–18:00 · Нд — вихідний",
-      en: "Mon–Sat · 9:00–18:00 · Sun — closed",
-    },
+    hours: "Пн–Сб · 9:00–18:00 · Нд — вихідний",
     // Place pin from https://maps.app.goo.gl/8jT39P7VtVFwCW6SA
     coordinates: { lat: 48.4382103, lng: 22.720031 },
     directionsUrl: "https://maps.app.goo.gl/8jT39P7VtVFwCW6SA",
   },
   {
     id: "mukachevo-shtefana",
-    name: { uk: "Магазин OBRIY", en: "OBRIY store" },
-    address: {
-      uk: "м. Мукачево, вул. А. Штефана 25",
-      en: "Mukachevo, A. Shtefana St. 25",
-    },
+    name: "Магазин OBRIY",
+    address: "м. Мукачево, вул. А. Штефана 25",
     addressQuery: "Мукачево, вул. А. Штефана 25",
-    hours: {
-      uk: "Пн–Сб · 9:00–18:00 · Нд — вихідний",
-      en: "Mon–Sat · 9:00–18:00 · Sun — closed",
-    },
+    hours: "Пн–Сб · 9:00–18:00 · Нд — вихідний",
     coordinates: { lat: 48.43695498545579, lng: 22.723572749073792 },
   },
 ];

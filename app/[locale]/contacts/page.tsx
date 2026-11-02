@@ -16,7 +16,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const t = await getTranslations({ locale, namespace: "Meta" });
 
   return buildPageMetadata({
-    locale,
     href: "/contacts",
     title: t("contacts.title"),
     description: t("contacts.description"),
@@ -29,7 +28,7 @@ export default async function ContactsRoutePage({ params }: Props) {
 
   return (
     <>
-      <ContactsPage locale={locale} />
+      <ContactsPage />
       <Footer variant="compact" />
     </>
   );

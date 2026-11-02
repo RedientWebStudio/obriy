@@ -11,7 +11,8 @@ export const siteLinks = {
       process.env.NEXT_PUBLIC_SOCIAL_TELEGRAM?.trim() || TELEGRAM_URL,
     viber: process.env.NEXT_PUBLIC_SOCIAL_VIBER?.trim() || VIBER_URL,
   },
-  studio: process.env.NEXT_PUBLIC_STUDIO_URL?.trim() ?? "",
+  /** Redient Web Studio credit in the footer — not Sanity Studio. */
+  rws: process.env.NEXT_PUBLIC_RWS_URL?.trim() ?? "",
 } as const;
 
 /** HTTPS links open in a new tab. App URIs such as viber:// stay in-place. */

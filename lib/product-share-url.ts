@@ -46,15 +46,15 @@ export function getProductShareOrigin(): string {
 /**
  * Absolute product URL for Share / clipboard.
  * Uses `?product=` (Telegram-safe) and `#product-…` (in-page anchor).
+ * Ukrainian-only site: no `/uk` or `/en` prefix.
  */
 export function buildProductShareUrl(
-  locale: string,
   categorySlug: string,
   anchorId: string,
 ): string {
   const origin = getProductShareOrigin() || window.location.origin;
   const url = new URL(
-    `/${locale}/catalog/${encodeURIComponent(categorySlug)}`,
+    `/catalog/${encodeURIComponent(categorySlug)}`,
     origin.endsWith("/") ? origin : `${origin}/`,
   );
   url.searchParams.set(PRODUCT_SHARE_QUERY, anchorId);

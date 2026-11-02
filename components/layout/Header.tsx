@@ -2,7 +2,6 @@ import { getTranslations } from "next-intl/server";
 import { HeaderBurgerMenu } from "@/components/layout/HeaderBurgerMenu";
 import { HeaderFrame } from "@/components/layout/HeaderFrame";
 import { HeaderLogo } from "@/components/layout/HeaderLogo";
-import { LocaleSwitcher } from "@/components/layout/LocaleSwitcher";
 import { NavLinks, type NavItem } from "@/components/layout/NavLinks";
 
 const navItems: NavItem[] = [
@@ -31,9 +30,6 @@ export async function Header() {
       />
 
       <div className="header-actions">
-        <div className="header-locale">
-          <LocaleSwitcher />
-        </div>
         <HeaderBurgerMenu
           items={navItems}
           labels={labels}
